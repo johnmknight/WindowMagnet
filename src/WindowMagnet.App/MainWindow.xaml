@@ -1,0 +1,122 @@
+<Window x:Class="WindowMagnet.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="clr-namespace:WindowMagnet.App.Controls"
+        Title="WindowMagnet"
+        Width="380"
+        SizeToContent="Height"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="True"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Border Background="{StaticResource PanelBackground}"
+            BorderBrush="{StaticResource PanelBorder}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Title bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource PanelTitleBar}"
+                    BorderBrush="{StaticResource PanelBorder}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="8,8,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid Margin="10,6,8,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="14" Height="14"
+                            Background="{StaticResource AccentBrush}"
+                            CornerRadius="3" Margin="0,0,7,0">
+                        <TextBlock Text="W" Foreground="White" FontSize="9"
+                                   FontWeight="Medium"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="WindowMagnet"
+                               Foreground="{StaticResource PanelText}"
+                               FontSize="11.5" FontWeight="Medium"
+                               VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Style="{StaticResource ChromeBtn}" Content="—" Click="Minimize_Click" ToolTip="Minimize" />
+                        <Button Style="{StaticResource ChromeBtn}" Content="✕" Click="Close_Click" ToolTip="Close" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Filter -->
+            <Grid Grid.Row="1" Margin="10,8,10,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" x:Name="FilterBox"
+                         Style="{StaticResource FilterBox}"
+                         TextChanged="FilterBox_TextChanged" />
+                <TextBlock Grid.Column="1" x:Name="CountLabel"
+                           Text="0 windows"
+                           Foreground="{StaticResource PanelTextFaint}"
+                           FontSize="10.5"
+                           VerticalAlignment="Center"
+                           Margin="8,0,0,0" />
+            </Grid>
+
+            <!-- Thumbnail grid -->
+            <ItemsControl Grid.Row="2" x:Name="ThumbList" Margin="7,4,7,4">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="3" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource ThumbnailBtn}"
+                                Margin="3"
+                                Tag="{Binding Handle}"
+                                Click="ThumbButton_Click"
+                                ToolTip="{Binding Title}">
+                            <StackPanel>
+                                <ctrl:ThumbnailHost SourceHandle="{Binding Handle}"
+                                                    Height="56" />
+                                <DockPanel LastChildFill="True" Margin="5,3,5,4">
+                                    <Ellipse DockPanel.Dock="Left"
+                                             Width="4" Height="4"
+                                             Fill="{StaticResource LiveDotBrush}"
+                                             Margin="0,0,4,0"
+                                             VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Title}"
+                                               Foreground="{StaticResource PanelTextMuted}"
+                                               FontSize="9"
+                                               TextTrimming="CharacterEllipsis" />
+                                </DockPanel>
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Toolbar -->
+            <Border Grid.Row="3"
+                    BorderBrush="{StaticResource PanelBorder}"
+                    BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" Margin="10,6,10,7">
+                    <Button Style="{StaticResource ToolbarBtn}" Content="Profiles" Click="Profiles_Click" />
+                    <Button Style="{StaticResource ToolbarBtn}" Content="Refresh"  Click="Refresh_Click"  />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

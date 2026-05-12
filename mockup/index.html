@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WindowMagnet — UI Mockup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --surface-2: #efeee9;
+    --text: #1c1c1a; --text-muted: #5f5e5a; --text-faint: #888780;
+    --border: rgba(0,0,0,0.12);
+    --info: #185fa5; --success: #3b6d11;
+    --radius-md: 8px; --radius-lg: 12px;
+    --accent: #4c8cff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --surface: #262624; --surface-2: #2c2c2a;
+      --text: #f4f4f0; --text-muted: #b4b2a9; --text-faint: #888780;
+      --border: rgba(255,255,255,0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.5; }
+  body { padding: 28px 16px 48px; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 500; margin: 0 0 4px; }
+  .lede { color: var(--text-muted); margin: 0 0 18px; font-size: 13px; }
+
+  .desk { background: var(--surface-2); border-radius: var(--radius-lg); padding: 40px 16px; display: flex; justify-content: center; position: relative; border: 0.5px solid var(--border); }
+  .desk::before { content: "monitor 2 — desktop"; position: absolute; top: 10px; left: 14px; font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.3px; text-transform: uppercase; }
+
+  .win { width: 360px; background: #0e1116; border: 0.5px solid #2c313c; border-radius: 8px; overflow: hidden; color: #e7e9ee; font-size: 12px; }
+  .tbar { display: flex; align-items: center; padding: 6px 10px; background: #15181f; border-bottom: 0.5px solid #2c313c; }
+  .tlogo { width: 14px; height: 14px; border-radius: 3px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 500; margin-right: 7px; }
+  .tname { font-size: 11.5px; font-weight: 500; }
+  .tctl { margin-left: auto; display: flex; gap: 8px; color: #6b7280; font-size: 11px; }
+  .tctl .x:hover { color: #f87171; cursor: pointer; }
+
+  .filter { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 0.5px solid #1f242c; }
+  .filter input { flex: 1; background: #181c24; border: 0.5px solid #2c313c; color: #c4c7cf; border-radius: 4px; padding: 4px 8px; font-size: 11px; outline: none; font: inherit; }
+  .filter input:focus { border-color: var(--accent); }
+  .ct { font-size: 10.5px; color: #6b7280; }
+
+  .gs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px 10px; }
+  .ts { background: #181c24; border: 0.5px solid #2c313c; border-radius: 4px; padding: 0; cursor: pointer; text-align: left; color: inherit; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.12s, border-color 0.12s, opacity 0.2s; font: inherit; }
+  .ts:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .ts.rcd { opacity: 0.32; cursor: default; }
+  .ts.rcd:hover { transform: none; border-color: #2c313c; }
+  .tt { aspect-ratio: 16/9; width: 100%; background: #fff; overflow: hidden; }
+  .tl { display: flex; align-items: center; gap: 4px; padding: 3px 5px 4px; font-size: 9px; line-height: 1.2; color: #c4c7cf; }
+  .dt { width: 4px; height: 4px; border-radius: 50%; background: #19c37d; flex-shrink: 0; animation: blip 2s infinite; }
+  .ts.rcd .dt { background: var(--accent); animation: none; }
+  .tn { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @keyframes blip { 0%, 100% { opacity: 1 } 50% { opacity: 0.3 } }
+
+  .uc { background: #fff; height: 100%; display: flex; flex-direction: column; }
+  .uc-b { background: #dde1e6; height: 30%; padding: 2px 3px 0; display: flex; gap: 1.5px; }
+  .uc-t { background: #fff; padding: 1.5px 4px; font-size: 4px; border-radius: 2px 2px 0 0; color: #333; line-height: 1; }
+  .uc-u { background: #e8eaed; height: 4px; margin: 2px 3px 0; border-radius: 2px; }
+  .uc-x { flex: 1; padding: 2px 4px; }
+  .uc-h { height: 3px; width: 55%; background: #1a73e8; border-radius: 1px; margin-bottom: 2px; }
+  .uc-l { height: 1.5px; background: #e0e0e0; border-radius: 1px; margin: 1.5px 0; }
+
+  .ud { background: #313338; height: 100%; display: flex; }
+  .ud-s { background: #1e1f22; width: 18%; padding: 2px 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .ud-i { width: 7px; height: 7px; border-radius: 50%; background: #5865f2; }
+  .ud-i.a { background: #f23f42; border-radius: 2px; }
+  .ud-c { background: #2b2d31; width: 32%; padding: 2px; }
+  .ud-cn { font-size: 3.5px; padding: 0.5px 1px; color: #b5bac1; line-height: 1.3; }
+  .ud-cn.on { background: #404249; color: white; border-radius: 1px; }
+  .ud-m { flex: 1; padding: 2px; }
+  .ud-mg { display: flex; gap: 2px; margin-top: 1.5px; }
+  .ud-av { width: 5px; height: 5px; border-radius: 50%; background: #eb459e; flex-shrink: 0; margin-top: 0.5px; }
+  .ud-tx { height: 1.5px; background: #4a4d54; border-radius: 0.5px; margin-top: 1px; width: 80%; }
+
+  .us { background: #121212; height: 100%; padding: 2px 3px; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .us-a { background: #1db954; width: 60%; aspect-ratio: 1; border-radius: 1.5px; display: flex; align-items: center; justify-content: center; color: #064e1e; font-size: 9px; line-height: 1; }
+  .us-t { font-size: 4px; margin-top: 2px; font-weight: 500; }
+  .us-b { background: #535353; height: 1.5px; width: 70%; border-radius: 0.5px; margin-top: 2px; overflow: hidden; }
+  .us-p { background: #1db954; height: 100%; width: 45%; }
+
+  .uv { background: #1e1e1e; height: 100%; display: flex; }
+  .uv-a { background: #333; width: 10%; }
+  .uv-e { background: #252526; width: 32%; padding: 2px; }
+  .uv-f { font-size: 3.5px; color: #ccc; padding: 0.5px 0; line-height: 1.3; }
+  .uv-f.on { color: white; background: #37373d; }
+  .uv-c { flex: 1; padding: 2px 3px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 3.5px; line-height: 1.5; color: #d4d4d4; }
+  .vp { color: #c586c0 } .vy { color: #dcdcaa } .vb { color: #569cd6 } .vg { color: #6a9955 }
+
+  .un { background: #fff; color: #111; height: 100%; padding: 2px 3px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 4px; line-height: 1.6; }
+
+  .uk { background: #1a1d29; height: 100%; display: flex; color: #e8e8e8; }
+  .uk-s { background: #19171d; width: 34%; padding: 2px; }
+  .uk-t { font-size: 4px; font-weight: 500; color: white; margin-bottom: 1px; }
+  .uk-c { font-size: 3.5px; color: #bcabbc; padding: 0.5px 1px; line-height: 1.3; }
+  .uk-c.on { background: #1164a3; color: white; border-radius: 1px; }
+  .uk-m { flex: 1; padding: 2px 3px; }
+  .uk-mg { font-size: 3.5px; margin-top: 1.5px; line-height: 1.3; }
+  .uk-nm { font-weight: 500; color: white; }
+  .uk-tx { color: #bcabbc; }
+
+  .bar { display: flex; align-items: center; padding: 6px 10px; border-top: 0.5px solid #1f242c; gap: 6px; }
+  .bb { background: transparent; border: 0.5px solid #2c313c; color: #c4c7cf; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font: inherit; transition: border-color 0.12s, color 0.12s; }
+  .bb:hover { border-color: var(--accent); color: white; }
+  .bb.r { margin-left: auto; }
+
+  .status { background: var(--surface-2); border-radius: var(--radius-md); padding: 8px 12px; font-size: 11.5px; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; margin-top: 10px; min-height: 32px; display: flex; align-items: center; border: 0.5px solid var(--border); }
+  .status .tag { color: var(--success); font-weight: 500; margin-right: 6px; }
+  .status .flag { color: var(--info); }
+
+  .footer { margin-top: 24px; padding-top: 16px; border-top: 0.5px solid var(--border); color: var(--text-faint); font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <h1>WindowMagnet — UI mockup</h1>
+  <p class="lede">A compact picker window on monitor 2. Tiny live thumbnails of every window buried behind the fullscreen game on monitor 1 — click one to recall it. The game keeps focus.</p>
+
+  <div class="desk">
+    <div class="win">
+      <div class="tbar">
+        <div class="tlogo">W</div>
+        <div class="tname">WindowMagnet</div>
+        <div class="tctl"><span>—</span><span>▢</span><span class="x">✕</span></div>
+      </div>
+
+      <div class="filter">
+        <input placeholder="Filter windows…">
+        <span class="ct"><span id="ct">6</span> windows</span>
+      </div>
+
+      <div class="gs">
+
+        <button class="ts" data-app="chrome" title="Chrome — github.com">
+          <div class="tt"><div class="uc"><div class="uc-b"><div class="uc-t">tab</div><div class="uc-t" style="background:#c8ccd3;color:#666;">·</div></div><div class="uc-u"></div><div class="uc-x"><div class="uc-h"></div><div class="uc-l" style="width:85%"></div><div class="uc-l" style="width:65%"></div></div></div></div>
+          <div class="tl"><span class="dt"></span><span class="tn">Chrome</span></div>
+        </button>
+
+        <button class="ts" data-app="discord" title="Discord — #gaming">
+          <div class="tt"><div class="ud"><div class="ud-s"><div class="ud-i"></div><div class="ud-i a"></div></div><div class="ud-c"><div class="ud-cn"># gen</div><div class="ud-cn on"># gam</div><div class="ud-cn"># dev</div></div><div class="ud-m"><div class="ud-mg"><div class="ud-av"></div><div class="ud-tx"></div></div><div class="ud-mg"><div class="ud-av" style="background:#5865f2"></div><div class="ud-tx" style="width:60%"></div></div></div></div></div>
+          <div class="tl"><span class="dt"></span><span class="tn">Discord</span></div>
+        </button>
+
+        <button class="ts" data-app="spotify" title="Spotify — Wake Up">
+          <div class="tt"><div class="us"><div class="us-a">♪</div><div class="us-t">Wake Up</div><div class="us-b"><div class="us-p"></div></div></div></div>
+          <div class="tl"><span class="dt"></span><span class="tn">Spotify</span></div>
+        </button>
+
+        <button class="ts" data-app="vscode" title="VS Code — App.cs">
+          <div class="tt"><div class="uv"><div class="uv-a"></div><div class="uv-e"><div class="uv-f">▸ src</div><div class="uv-f on">App.cs</div><div class="uv-f">Core</div></div><div class="uv-c"><div><span class="vp">using</span> System;</div><div><span class="vb">class</span> <span class="vy">App</span></div><div>{</div><div><span class="vg">// thumb</span></div></div></div></div>
+          <div class="tl"><span class="dt"></span><span class="tn">VS Code</span></div>
+        </button>
+
+        <button class="ts" data-app="notepad" title="Notepad — notes.txt">
+          <div class="tt"><div class="un">notes.txt<br>{ "v":1,<br>&nbsp;&nbsp;"w":1200 }</div></div>
+          <div class="tl"><span class="dt"></span><span class="tn">Notepad</span></div>
+        </button>
+
+        <button class="ts" data-app="slack" title="Slack — #cowork">
+          <div class="tt"><div class="uk"><div class="uk-s"><div class="uk-t">Ant.</div><div class="uk-c"># gen</div><div class="uk-c on"># cow</div><div class="uk-c"># rnd</div></div><div class="uk-m"><div class="uk-mg"><span class="uk-nm">jane</span> <span class="uk-tx">ship it</span></div><div class="uk-mg"><span class="uk-nm">alex</span> <span class="uk-tx">+1</span></div></div></div></div>
+          <div class="tl"><span class="dt"></span><span class="tn">Slack</span></div>
+        </button>
+
+      </div>
+
+      <div class="bar">
+        <button class="bb">Profiles</button>
+        <button class="bb">Refresh</button>
+        <button class="bb r" id="rst">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span id="sl"><span class="tag">[idle]</span>Picker enumerating windows — click any thumbnail to recall.</span>
+  </div>
+
+  <div class="footer">
+    Static HTML mockup. The picker is roughly to scale — about 360px wide on a 1080p second monitor (~19% of screen width). The real app uses Win32 <code>EnumWindows</code>, the DWM Thumbnail API for live previews, and <code>SetWindowPos</code> with <code>SWP_NOACTIVATE</code> for focus-preserving recall. See <a href="../DESIGN.md">DESIGN.md</a>.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var P = {
+    chrome:  { a: 'top-center', w: 1400, h: 900,  n: 'chrome.exe',  d: 'Chrome' },
+    discord: { a: 'top-right',  w: 800,  h: 1000, n: 'Discord.exe', d: 'Discord' },
+    spotify: { a: 'top-left',   w: 1000, h: 700,  n: 'Spotify.exe', d: 'Spotify' },
+    vscode:  { a: 'top',        w: 1400, h: 900,  n: 'Code.exe',    d: 'VS Code' },
+    notepad: { a: 'top-left',   w: 700,  h: 600,  n: 'notepad.exe', d: 'Notepad' },
+    slack:   { a: 'top-center', w: 1100, h: 850,  n: 'slack.exe',   d: 'Slack' }
+  };
+  function recall(app) {
+    document.querySelectorAll('.ts').forEach(function(t){ t.classList.remove('rcd'); });
+    var tile = document.querySelector('.ts[data-app="'+app+'"]');
+    if (tile) tile.classList.add('rcd');
+    var ts = new Date().toLocaleTimeString([], {hour12: false});
+    var p = P[app];
+    document.getElementById('sl').innerHTML =
+      '<span class="tag">['+ts+']</span>SetWindowPos(' + p.n + ', mon=2, "' + p.a + '", ' + p.w + '×' + p.h + ', <span class="flag">SWP_NOACTIVATE</span>) — ' + p.d + ' recalled, game keeps focus';
+  }
+  document.querySelectorAll('.ts').forEach(function(t){
+    t.addEventListener('click', function(){ recall(t.dataset.app); });
+  });
+  document.getElementById('rst').addEventListener('click', function(){
+    document.querySelectorAll('.ts').forEach(function(t){ t.classList.remove('rcd'); });
+    document.getElementById('sl').innerHTML = '<span class="tag">[idle]</span>Picker enumerating windows — click any thumbnail to recall.';
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "defaultSlot": {
+    "monitor": 2,
+    "anchor": "top",
+    "width": 1200,
+    "height": 800,
+    "offsetX": 0,
+    "offsetY": 0
+  },
+  "rules": [
+    {
+      "match": { "processName": "chrome.exe" },
+      "slot": {
+        "monitor": 2,
+        "anchor": "top-center",
+        "width": 1400,
+        "height": 900
+      }
+    },
+    {
+      "match": { "windowTitleContains": "Discord" },
+      "slot": {
+        "monitor": 2,
+        "anchor": "top-right",
+        "width": 800,
+        "height": 1000
+      }
+    },
+    {
+      "match": { "processName": "spotify.exe" },
+      "slot": {
+        "monitor": 2,
+        "anchor": "top-left",
+        "width": 1000,
+        "height": 700
+      }
+    }
+  ]
+}

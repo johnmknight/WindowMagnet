@@ -50,6 +50,9 @@ public partial class MainWindow : Window
     {
         var helper = new WindowInteropHelper(this);
         _enumerator.Exclude(helper.Handle);
+        // Tray controller can only register hotkeys once the HWND exists, so this
+        // is the earliest safe point to wire it up.
+        App.Tray?.AttachTo(this);
     }
 
     private bool _positioned;
@@ -148,15 +151,20 @@ public partial class MainWindow : Window
         if (e.ChangedButton == MouseButton.Left) DragMove();
     }
 
-    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void Close_Click(object sender, RoutedEventArgs e) => Close();
+    private void Minimize_Click(object sender, RoutedEventArgs e) => Hide();
+    // The X button hides to tray rather than terminates — the app keeps running so
+    // the global hotkey and tray icon stay live. The tray's "Quit" exits for real.
+    private void Close_Click(object sender, RoutedEventArgs e) => Hide();
     private void Refresh_Click(object sender, RoutedEventArgs e) => RefreshWindows();
-    private void Profiles_Click(object sender, RoutedEventArgs e)
+    private void Profiles_Click(object sender, RoutedEventArgs e) => OpenProfileDialog();
+
+    /// <summary>
+    /// Open the profile editor dialog as a modal. Reloads the profile + resolver on
+    /// success so new rules apply on the next thumbnail click. Public so the tray
+    /// menu can trigger it without going through a routed event.
+    /// </summary>
+    public void OpenProfileDialog()
     {
-        // Open the proper editor dialog. On Save, reload the profile so the resolver
-        // picks up new rules immediately (next click will route by the updated config).
-        // Picker-window placement changes apply on next launch — moving the live
-        // picker mid-session would be jarring.
         var dlg = new ProfileDialog(_store, _profile) { Owner = this };
         if (dlg.ShowDialog() == true)
         {

@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- WinForms is enabled solely for NotifyIcon (the tray icon API). The rest of the
+         app is WPF; we don't reference any other WinForms control. -->
+    <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>WindowMagnet</AssemblyName>
     <RootNamespace>WindowMagnet.App</RootNamespace>
@@ -14,6 +17,16 @@
   <ItemGroup>
     <ProjectReference Include="..\WindowMagnet.Core\WindowMagnet.Core.csproj" />
     <ProjectReference Include="..\WindowMagnet.Config\WindowMagnet.Config.csproj" />
+  </ItemGroup>
+
+  <!-- UseWindowsForms auto-imports System.Windows.Forms into every file via
+       implicit usings. That clashes with WPF types (Application, ComboBox,
+       Size, ...). The tray + drawing code uses fully-qualified or aliased names
+       (System.Windows.Forms.NotifyIcon, System.Drawing.*) so removing the
+       implicit using keeps the WPF-first codebase clean. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
 </Project>

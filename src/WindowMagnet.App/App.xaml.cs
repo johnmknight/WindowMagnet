@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using WindowMagnet.App.Tray;
 
 namespace WindowMagnet.App;
 
@@ -10,6 +11,9 @@ public partial class App : Application
     private static readonly string LogPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "WindowMagnet", "windowmagnet.log");
+
+    /// <summary>Single tray controller for the app's lifetime.</summary>
+    public static TrayController? Tray { get; private set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -20,8 +24,22 @@ public partial class App : Application
         DispatcherUnhandledException += OnDispatcherUnhandled;
         AppDomain.CurrentDomain.UnhandledException += OnAppDomainUnhandled;
 
-        Log($"=== startup pid={Environment.ProcessId} ver=0.1 ===");
+        Log($"=== startup pid={Environment.ProcessId} ver=0.3 ===");
+
+        // ShutdownMode = OnExplicitShutdown so closing the picker hides to tray
+        // instead of terminating the process. The tray menu's Quit calls Shutdown
+        // explicitly when the user really wants out.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        Tray = new TrayController();
+
         base.OnStartup(e);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Tray?.Dispose();
+        Tray = null;
+        base.OnExit(e);
     }
 
     private void OnDispatcherUnhandled(object sender, DispatcherUnhandledExceptionEventArgs e)

@@ -74,7 +74,8 @@ public sealed class WindowEnumerator
                     proc,
                     pid,
                     new WindowBounds(rect.Left, rect.Top, rect.Width, rect.Height),
-                    NativeMethods.IsIconic(hWnd)));
+                    NativeMethods.IsIconic(hWnd),
+                    ProcessRights.CanMoveWindow(hWnd)));
             }
             catch
             {

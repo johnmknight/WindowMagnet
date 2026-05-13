@@ -170,6 +170,15 @@ public partial class MainWindow : Window
         if (sender is not Button btn) { ReportStatus("click: not a button"); return; }
         if (btn.DataContext is not WindowInfo info) { ReportStatus("click: no WindowInfo bound"); return; }
 
+        // Bail early when we know SetWindowPos will fail across the integrity boundary.
+        // The tile is already dimmed in XAML; this gives the user a written explanation.
+        if (!info.CanMove)
+        {
+            App.Log($"recall blocked: '{info.Title}' [{info.ProcessName}] is higher integrity (needs admin)");
+            ReportStatus($"{TruncateTitle(info.Title)} needs admin to move");
+            return;
+        }
+
         var slot = _resolver.Resolve(info.ProcessName, info.Title);
 
         var monitors = Monitors.WorkAreas();

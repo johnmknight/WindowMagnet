@@ -79,6 +79,47 @@ internal static class NativeMethods
     [DllImport("dwmapi.dll")]
     internal static extern int DwmGetWindowAttribute(IntPtr hwnd, uint dwAttribute, out int pvAttribute, int cbAttribute);
 
+    // ---- kernel32 / advapi32 (integrity checks) ----
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    internal static extern IntPtr OpenProcess(uint dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, uint dwProcessId);
+
+    [DllImport("kernel32.dll")]
+    internal static extern IntPtr GetCurrentProcess();
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool CloseHandle(IntPtr hObject);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool OpenProcessToken(IntPtr processHandle, uint desiredAccess, out IntPtr tokenHandle);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetTokenInformation(IntPtr tokenHandle, int tokenInformationClass, IntPtr tokenInformation, uint tokenInformationLength, out uint returnLength);
+
+    [DllImport("advapi32.dll")]
+    internal static extern IntPtr GetSidSubAuthority(IntPtr pSid, uint nSubAuthority);
+
+    [DllImport("advapi32.dll")]
+    internal static extern IntPtr GetSidSubAuthorityCount(IntPtr pSid);
+
+    // Process / token access rights
+    internal const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+    internal const uint TOKEN_QUERY = 0x0008;
+
+    // TOKEN_INFORMATION_CLASS.TokenIntegrityLevel
+    internal const int TokenIntegrityLevel = 25;
+
+    // Standard mandatory integrity level RIDs (the last sub-authority of the integrity SID).
+    // A process at level N cannot SetWindowPos a window owned by a process at level > N.
+    internal const int SECURITY_MANDATORY_UNTRUSTED_RID = 0x00000000;
+    internal const int SECURITY_MANDATORY_LOW_RID       = 0x00001000;
+    internal const int SECURITY_MANDATORY_MEDIUM_RID    = 0x00002000;
+    internal const int SECURITY_MANDATORY_HIGH_RID      = 0x00003000;
+    internal const int SECURITY_MANDATORY_SYSTEM_RID    = 0x00004000;
+
     // ---- constants ----
 
     internal const uint SWP_NOSIZE         = 0x0001;

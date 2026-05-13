@@ -86,10 +86,24 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Button Style="{StaticResource ThumbnailBtn}"
-                                Margin="3"
+                        <!--
+                            Tile opacity drops to 0.45 when CanMove == false (integrity boundary;
+                            target is elevated and our SetWindowPos would get ACCESS_DENIED).
+                            Click stays enabled so the handler can show a "needs admin" status,
+                            rather than silently swallowing the click on a disabled button.
+                        -->
+                        <Button Margin="3"
                                 Click="ThumbButton_Click"
-                                ToolTip="{Binding Title}">
+                                ToolTip="{Binding Tooltip}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource ThumbnailBtn}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanMove}" Value="False">
+                                            <Setter Property="Opacity" Value="0.45" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <StackPanel>
                                 <ctrl:ThumbnailHost SourceHandle="{Binding Handle}"
                                                     Height="56" />

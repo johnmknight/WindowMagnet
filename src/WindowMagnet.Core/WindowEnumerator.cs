@@ -14,6 +14,14 @@ public sealed class WindowEnumerator
     private readonly HashSet<IntPtr> _excludeHandles = new();
     private readonly HashSet<string> _excludeProcessNames = new(StringComparer.OrdinalIgnoreCase);
 
+    // Window classes that represent the shell rather than a real movable app window.
+    // Progman = the desktop ("Program Manager"), WorkerW = the wallpaper/Active Desktop
+    // layer, Shell_TrayWnd = the taskbar. None of these are useful recall targets.
+    private static readonly HashSet<string> _excludeClasses = new(StringComparer.Ordinal)
+    {
+        "Progman", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd",
+    };
+
     /// <summary>Minimum width to consider — filters out tooltips and floating toolbars.</summary>
     public int MinWidth { get; set; } = 100;
 
@@ -36,6 +44,14 @@ public sealed class WindowEnumerator
             {
                 if (_excludeHandles.Contains(hWnd)) return true;
                 if (!NativeMethods.IsWindowVisible(hWnd)) return true;
+
+                // Drop shell windows up front (Progman/WorkerW/Shell_TrayWnd).
+                var classBuf = new StringBuilder(64);
+                if (NativeMethods.GetClassName(hWnd, classBuf, classBuf.Capacity) > 0
+                    && _excludeClasses.Contains(classBuf.ToString()))
+                {
+                    return true;
+                }
 
                 int len = NativeMethods.GetWindowTextLength(hWnd);
                 if (len <= 0) return true;

@@ -34,25 +34,74 @@ public sealed class ThumbnailManager : IDisposable
         return thumb;
     }
 
-    /// <summary>Position the thumbnail inside the destination window's client area.</summary>
+    /// <summary>
+    /// Position the thumbnail inside the destination window's client area.
+    /// <para>
+    /// When <paramref name="cropSource"/> is non-null, only that rect of the source
+    /// window is rendered (DWM stretches it to fill the destination). Use this to
+    /// eliminate letterbox bars when the destination aspect doesn't match the
+    /// source — see <see cref="ComputeCenteredCrop"/>.
+    /// </para>
+    /// </summary>
     public void UpdateRect(IntPtr thumb, int x, int y, int width, int height,
-                           byte opacity = 255, bool sourceClientAreaOnly = false)
+                           byte opacity = 255, bool sourceClientAreaOnly = false,
+                           (int X, int Y, int W, int H)? cropSource = null)
     {
         if (thumb == IntPtr.Zero) return;
         if (width <= 0 || height <= 0) return;
 
+        uint flags = NativeMethods.DWM_TNP_VISIBLE
+                   | NativeMethods.DWM_TNP_RECTDESTINATION
+                   | NativeMethods.DWM_TNP_OPACITY
+                   | NativeMethods.DWM_TNP_SOURCECLIENTAREAONLY;
+        var rcSource = default(RECT);
+        if (cropSource is { } c && c.W > 0 && c.H > 0)
+        {
+            flags |= NativeMethods.DWM_TNP_RECTSOURCE;
+            rcSource = new RECT { Left = c.X, Top = c.Y, Right = c.X + c.W, Bottom = c.Y + c.H };
+        }
+
         var props = new DWM_THUMBNAIL_PROPERTIES
         {
-            dwFlags = NativeMethods.DWM_TNP_VISIBLE
-                    | NativeMethods.DWM_TNP_RECTDESTINATION
-                    | NativeMethods.DWM_TNP_OPACITY
-                    | NativeMethods.DWM_TNP_SOURCECLIENTAREAONLY,
+            dwFlags = flags,
             fVisible = true,
             opacity = opacity,
             fSourceClientAreaOnly = sourceClientAreaOnly,
             rcDestination = new RECT { Left = x, Top = y, Right = x + width, Bottom = y + height },
+            rcSource = rcSource,
         };
         NativeMethods.DwmUpdateThumbnailProperties(thumb, ref props);
+    }
+
+    /// <summary>
+    /// Compute a centered crop rect inside a source of <paramref name="srcW"/> x
+    /// <paramref name="srcH"/> that matches the aspect ratio of <paramref name="dstW"/> x
+    /// <paramref name="dstH"/>. Returns null when aspects already match (no crop needed)
+    /// or when either dimension is non-positive.
+    /// </summary>
+    public static (int X, int Y, int W, int H)? ComputeCenteredCrop(
+        int srcW, int srcH, int dstW, int dstH)
+    {
+        if (srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0) return null;
+        double srcAspect = (double)srcW / srcH;
+        double dstAspect = (double)dstW / dstH;
+        // 1% tolerance — no point cropping for sub-pixel mismatches.
+        if (Math.Abs(srcAspect - dstAspect) / dstAspect < 0.01) return null;
+
+        if (srcAspect > dstAspect)
+        {
+            // Source wider than dest — crop horizontally.
+            int cropW = (int)Math.Round(srcH * dstAspect);
+            int cropX = (srcW - cropW) / 2;
+            return (cropX, 0, cropW, srcH);
+        }
+        else
+        {
+            // Source taller than dest — crop vertically.
+            int cropH = (int)Math.Round(srcW / dstAspect);
+            int cropY = (srcH - cropH) / 2;
+            return (0, cropY, srcW, cropH);
+        }
     }
 
     /// <summary>The source window's natural pixel size — useful for aspect-correct layouts.</summary>

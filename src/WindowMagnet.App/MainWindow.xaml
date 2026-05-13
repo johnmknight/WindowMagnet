@@ -93,6 +93,7 @@
                             rather than silently swallowing the click on a disabled button.
                         -->
                         <Button Margin="3"
+                                Height="90"
                                 Click="ThumbButton_Click"
                                 ToolTip="{Binding Tooltip}">
                             <Button.Style>
@@ -104,11 +105,20 @@
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
-                            <StackPanel>
-                                <ctrl:ThumbnailHost SourceHandle="{Binding Handle}"
+                            <!-- Grid lets the thumbnail occupy all the leftover space (* row)
+                                 while the title strip keeps its natural height (Auto row).
+                                 This maximises the preview area inside each tile. -->
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ctrl:ThumbnailHost Grid.Row="0"
+                                                    SourceHandle="{Binding Handle}"
                                                     IsLocked="{Binding IsLocked}"
-                                                    Height="56" />
-                                <DockPanel LastChildFill="True" Margin="5,3,5,4">
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch" />
+                                <DockPanel Grid.Row="1" LastChildFill="True" Margin="5,2,5,4">
                                     <Ellipse DockPanel.Dock="Left"
                                              Width="4" Height="4"
                                              Fill="{StaticResource LiveDotBrush}"
@@ -119,7 +129,7 @@
                                                FontSize="9"
                                                TextTrimming="CharacterEllipsis" />
                                 </DockPanel>
-                            </StackPanel>
+                            </Grid>
                         </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

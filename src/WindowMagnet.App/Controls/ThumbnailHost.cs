@@ -66,10 +66,15 @@ public sealed class ThumbnailHost : FrameworkElement, IDisposable
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        // Honour explicit Width/Height; otherwise prefer 16:9 to match the
-        // typical aspect of recalled windows.
-        double w = double.IsFinite(Width) ? Width : (double.IsFinite(availableSize.Width) ? availableSize.Width : 100);
-        double h = double.IsFinite(Height) ? Height : w * 9.0 / 16.0;
+        // Honour explicit Width/Height; otherwise stretch to whatever the parent
+        // gives us (e.g. a Grid star row). Fall back to 16:9 only when the parent
+        // passes infinity in a dimension (Auto layout, top-level StackPanel, etc.).
+        double w = double.IsFinite(Width)
+            ? Width
+            : (double.IsFinite(availableSize.Width) && availableSize.Width > 0 ? availableSize.Width : 100);
+        double h = double.IsFinite(Height)
+            ? Height
+            : (double.IsFinite(availableSize.Height) && availableSize.Height > 0 ? availableSize.Height : w * 9.0 / 16.0);
         return new Size(w, h);
     }
 
@@ -125,19 +130,40 @@ public sealed class ThumbnailHost : FrameworkElement, IDisposable
         if (_manager is null || _thumb == IntPtr.Zero || _hostWindow is null) return;
         if (ActualWidth <= 0 || ActualHeight <= 0) return;
 
-        // The destination rect is in client-area coordinates of the host window.
-        var elementOnScreen = PointToScreen(new Point(0, 0));
-        var windowOnScreen = _hostWindow.PointToScreen(new Point(0, 0));
+        // Dest rect MUST be in physical pixels relative to the host window's client
+        // area. Critically — at >100% DPI (e.g. 150%), ActualWidth/ActualHeight are
+        // DIPs and need to be scaled. Using PointToScreen on both corners gives us
+        // physical-pixel coordinates throughout, so the subtraction yields a width
+        // and height in the same unit as the (x,y) offset. Earlier this mixed DIPs
+        // (for w/h) with physical pixels (for x/y) and the thumbnail rendered at
+        // 1/dpiScale of the tile size — looked exactly like letterbox padding.
+        var topLeftPx     = PointToScreen(new Point(0, 0));
+        var bottomRightPx = PointToScreen(new Point(ActualWidth, ActualHeight));
+        var windowTopLeft = _hostWindow.PointToScreen(new Point(0, 0));
 
-        int x = (int)Math.Round(elementOnScreen.X - windowOnScreen.X);
-        int y = (int)Math.Round(elementOnScreen.Y - windowOnScreen.Y);
-        int w = (int)Math.Round(ActualWidth);
-        int h = (int)Math.Round(ActualHeight);
+        int x = (int)Math.Round(topLeftPx.X - windowTopLeft.X);
+        int y = (int)Math.Round(topLeftPx.Y - windowTopLeft.Y);
+        int w = (int)Math.Round(bottomRightPx.X - topLeftPx.X);
+        int h = (int)Math.Round(bottomRightPx.Y - topLeftPx.Y);
 
         // DWM opacity is a single byte 0..255. ~80 (~31%) reads as clearly dimmed
         // without being so faint that you can't tell what window it is.
         byte opacity = IsLocked ? (byte)80 : (byte)255;
-        _manager.UpdateRect(_thumb, x, y, w, h, opacity: opacity, sourceClientAreaOnly: false);
+
+        // Centre-crop the source to match the destination aspect ratio so the
+        // thumbnail FILLS the tile instead of letterboxing inside it. DWM stretches
+        // the cropped rect across the destination — that's what makes the preview
+        // feel like it dominates the tile rather than floating in a black box.
+        (int X, int Y, int W, int H)? crop = null;
+        if (_manager.TryGetSourceSize(_thumb, out int srcW, out int srcH))
+        {
+            crop = ThumbnailManager.ComputeCenteredCrop(srcW, srcH, w, h);
+        }
+
+        _manager.UpdateRect(_thumb, x, y, w, h,
+            opacity: opacity,
+            sourceClientAreaOnly: false,
+            cropSource: crop);
     }
 
     public void Dispose()

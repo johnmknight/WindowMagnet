@@ -1,5 +1,11 @@
 {
   "version": 1,
+  "pickerWindow": {
+    "monitor": 2,
+    "anchor": "top-right",
+    "offsetX": 20,
+    "offsetY": 20
+  },
   "defaultSlot": {
     "monitor": 2,
     "anchor": "top",

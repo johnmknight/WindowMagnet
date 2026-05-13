@@ -17,7 +17,8 @@ public partial class MainWindow : Window
     private readonly WindowEnumerator _enumerator = new();
     private readonly DispatcherTimer _timer;
     private readonly ProfileStore _store = new();
-    private ProfileResolver _resolver = null!;
+    private Profile _profile;
+    private ProfileResolver _resolver;
 
     public ObservableCollection<WindowInfo> Windows { get; } = new();
 
@@ -26,7 +27,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         ThumbList.ItemsSource = Windows;
 
-        _resolver = new ProfileResolver(_store.Load());
+        _profile = _store.Load();
+        _resolver = new ProfileResolver(_profile);
 
         // Tell the enumerator to exclude our own HWND once we have one.
         SourceInitialized += OnSourceInitialized;
@@ -34,7 +36,7 @@ public partial class MainWindow : Window
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(750) };
         _timer.Tick += (_, _) => RefreshWindows();
 
-        Loaded += (_, _) => { RefreshWindows(); _timer.Start(); };
+        Loaded += (_, _) => { PositionPickerWindow(); RefreshWindows(); _timer.Start(); };
         Closed += (_, _) => _timer.Stop();
     }
 
@@ -42,11 +44,40 @@ public partial class MainWindow : Window
     {
         var helper = new WindowInteropHelper(this);
         _enumerator.Exclude(helper.Handle);
-        // v0.1: window opens at CenterScreen via WindowStartupLocation in XAML.
-        // Multi-monitor auto-positioning is deferred to v0.4 — WPF's Left/Top use
-        // device-independent units that don't map cleanly to physical-pixel monitor
-        // bounds without per-monitor DPI translation. The user can drag the picker
-        // to monitor 2 manually after first launch.
+    }
+
+    /// <summary>
+    /// Place the picker window on the monitor configured in <c>PickerWindow</c>. Uses
+    /// Win32 SetWindowPos with physical pixels so per-monitor DPI translation just
+    /// works (WPF receives a WM_DPICHANGED message on cross-DPI moves and rescales).
+    /// </summary>
+    private void PositionPickerWindow()
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero) return;
+
+        var monitors = Monitors.WorkAreas();
+        if (monitors.Count == 0) return;
+
+        var prefs = _profile.PickerWindow;
+        int idx = Math.Clamp(prefs.Monitor - 1, 0, monitors.Count - 1);
+        var target = monitors[idx];
+
+        // Use the window's actual physical size after layout so anchor math is correct
+        // for any anchor (including bottom-/middle-).
+        var current = WindowMover.GetBounds(hwnd);
+
+        var virtualSlot = new Slot
+        {
+            Monitor = prefs.Monitor,
+            Anchor = prefs.Anchor,
+            Width = current.Width,
+            Height = current.Height,
+            OffsetX = prefs.OffsetX,
+            OffsetY = prefs.OffsetY,
+        };
+        var pos = SlotCalculator.Compute(virtualSlot, target);
+        WindowMover.MoveTo(hwnd, pos.X, pos.Y);
     }
 
     private void RefreshWindows()

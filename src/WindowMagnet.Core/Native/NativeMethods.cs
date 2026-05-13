@@ -81,10 +81,13 @@ internal static class NativeMethods
 
     // ---- constants ----
 
-    internal const uint SWP_NOACTIVATE     = 0x0010;
+    internal const uint SWP_NOSIZE         = 0x0001;
     internal const uint SWP_NOZORDER       = 0x0004;
+    internal const uint SWP_NOACTIVATE     = 0x0010;
     internal const uint SWP_SHOWWINDOW     = 0x0040;
     internal const uint SWP_ASYNCWINDOWPOS = 0x4000;
+
+    internal const uint MONITORINFOF_PRIMARY = 0x00000001;
 
     internal const int SW_SHOWNOACTIVATE = 4;
     internal const int SW_RESTORE        = 9;

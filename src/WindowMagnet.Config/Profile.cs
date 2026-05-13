@@ -4,8 +4,37 @@ namespace WindowMagnet.Config;
 public sealed record Profile
 {
     public int Version { get; init; } = 1;
+
+    /// <summary>Where the picker window itself appears at launch.</summary>
+    public PickerWindow PickerWindow { get; init; } = new();
+
     public Slot DefaultSlot { get; init; } = new();
     public IReadOnlyList<Rule> Rules { get; init; } = Array.Empty<Rule>();
+}
+
+/// <summary>
+/// Where to position the WindowMagnet picker window itself on startup. Uses the same
+/// anchor vocabulary as <see cref="Slot"/>. The picker is sized by WPF; only its
+/// position is taken from this record.
+/// </summary>
+public sealed record PickerWindow
+{
+    /// <summary>
+    /// 1-based monitor index. 1 = primary, 2 = first non-primary, etc. Defaults to 2 —
+    /// the whole point of WindowMagnet is to live on the non-game monitor. If the user
+    /// only has one monitor, the index is clamped to the available count.
+    /// </summary>
+    public int Monitor { get; init; } = 2;
+
+    /// <summary>
+    /// Anchor on the target monitor. One of: top-left, top, top-center, top-right,
+    /// middle-left, middle, middle-right, bottom-left, bottom, bottom-right.
+    /// Defaults to top-right — out of the way of typical work content.
+    /// </summary>
+    public string Anchor { get; init; } = "top-right";
+
+    public int OffsetX { get; init; } = 20;
+    public int OffsetY { get; init; } = 20;
 }
 
 /// <summary>

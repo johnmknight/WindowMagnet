@@ -11,7 +11,7 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="True"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
 

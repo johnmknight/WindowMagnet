@@ -65,3 +65,6 @@ Desktop.ini
 # WindowMagnet-specific
 profiles.local.json
 *.log
+
+# Local temp files used by scripted commits
+.commit-msg.tmp

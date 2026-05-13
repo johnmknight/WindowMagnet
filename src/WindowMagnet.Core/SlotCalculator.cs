@@ -12,15 +12,18 @@ public static class SlotCalculator
     {
         int w = slot.Width;
         int h = slot.Height;
+        // Offsets always move AWAY from the anchored edge toward the interior of the
+        // monitor — so for Right/Bottom anchors we subtract, for Left/Top we add.
+        // Center/Middle offsets are simple translations.
         int x = HorizontalAnchor(slot.Anchor) switch
         {
             HAnchor.Left   => monitor.X + slot.OffsetX,
-            HAnchor.Right  => monitor.Right - w + slot.OffsetX,
+            HAnchor.Right  => monitor.Right - w - slot.OffsetX,
             _              => monitor.X + (monitor.Width - w) / 2 + slot.OffsetX,
         };
         int y = VerticalAnchor(slot.Anchor) switch
         {
-            VAnchor.Bottom => monitor.Bottom - h + slot.OffsetY,
+            VAnchor.Bottom => monitor.Bottom - h - slot.OffsetY,
             VAnchor.Middle => monitor.Y + (monitor.Height - h) / 2 + slot.OffsetY,
             _              => monitor.Y + slot.OffsetY, // top is the WindowMagnet default
         };

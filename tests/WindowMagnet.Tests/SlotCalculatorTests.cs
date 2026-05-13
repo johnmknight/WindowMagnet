@@ -66,6 +66,27 @@ public class SlotCalculatorTests
     }
 
     [Fact]
+    public void TopRightOffset_InsetsFromRightEdge()
+    {
+        // "top-right" + offsetX 20 should mean "20px in from the right edge",
+        // NOT "20px past the right edge". This is the bug that put the picker
+        // offscreen on the first PickerWindow build.
+        var slot = new Slot { Anchor = "top-right", Width = 800, OffsetX = 20, OffsetY = 30 };
+        var b = SlotCalculator.Compute(slot, Mon2);
+        Assert.Equal(1920 + 1920 - 800 - 20, b.X);
+        Assert.Equal(30, b.Y);
+    }
+
+    [Fact]
+    public void BottomRightOffset_InsetsFromBothEdges()
+    {
+        var slot = new Slot { Anchor = "bottom-right", Width = 800, Height = 600, OffsetX = 15, OffsetY = 25 };
+        var b = SlotCalculator.Compute(slot, Mon2);
+        Assert.Equal(1920 + 1920 - 800 - 15, b.X);
+        Assert.Equal(1080 - 600 - 25, b.Y);
+    }
+
+    [Fact]
     public void NegativeMonitorOrigin_PreservesSign()
     {
         // Monitor 2 positioned to the LEFT of primary at (-1920, 0) — common setup

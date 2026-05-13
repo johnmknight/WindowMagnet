@@ -72,7 +72,9 @@
                            Foreground="{StaticResource PanelTextFaint}"
                            FontSize="10.5"
                            VerticalAlignment="Center"
-                           Margin="8,0,0,0" />
+                           Margin="8,0,0,0"
+                           TextTrimming="CharacterEllipsis"
+                           MaxWidth="220" />
             </Grid>
 
             <!-- Thumbnail grid -->
@@ -86,7 +88,6 @@
                     <DataTemplate>
                         <Button Style="{StaticResource ThumbnailBtn}"
                                 Margin="3"
-                                Tag="{Binding Handle}"
                                 Click="ThumbButton_Click"
                                 ToolTip="{Binding Title}">
                             <StackPanel>

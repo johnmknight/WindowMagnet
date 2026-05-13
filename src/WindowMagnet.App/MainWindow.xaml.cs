@@ -36,7 +36,12 @@ public partial class MainWindow : Window
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(750) };
         _timer.Tick += (_, _) => RefreshWindows();
 
-        Loaded += (_, _) => { PositionPickerWindow(); RefreshWindows(); _timer.Start(); };
+        // ContentRendered fires AFTER WPF has settled SizeToContent and per-monitor DPI
+        // layout, so Win32 SetWindowPos sticks. Loaded is too early — it runs before
+        // SizeToContent has computed the final size and before any WM_DPICHANGED
+        // adjustment, so a manual move gets undone by subsequent re-layout.
+        ContentRendered += (_, _) => PositionPickerWindow();
+        Loaded += (_, _) => { RefreshWindows(); _timer.Start(); };
         Closed += (_, _) => _timer.Stop();
     }
 
@@ -46,6 +51,8 @@ public partial class MainWindow : Window
         _enumerator.Exclude(helper.Handle);
     }
 
+    private bool _positioned;
+
     /// <summary>
     /// Place the picker window on the monitor configured in <c>PickerWindow</c>. Uses
     /// Win32 SetWindowPos with physical pixels so per-monitor DPI translation just
@@ -53,31 +60,48 @@ public partial class MainWindow : Window
     /// </summary>
     private void PositionPickerWindow()
     {
-        var hwnd = new WindowInteropHelper(this).Handle;
-        if (hwnd == IntPtr.Zero) return;
-
-        var monitors = Monitors.WorkAreas();
-        if (monitors.Count == 0) return;
-
-        var prefs = _profile.PickerWindow;
-        int idx = Math.Clamp(prefs.Monitor - 1, 0, monitors.Count - 1);
-        var target = monitors[idx];
-
-        // Use the window's actual physical size after layout so anchor math is correct
-        // for any anchor (including bottom-/middle-).
-        var current = WindowMover.GetBounds(hwnd);
-
-        var virtualSlot = new Slot
+        if (_positioned) return;
+        _positioned = true;
+        try
         {
-            Monitor = prefs.Monitor,
-            Anchor = prefs.Anchor,
-            Width = current.Width,
-            Height = current.Height,
-            OffsetX = prefs.OffsetX,
-            OffsetY = prefs.OffsetY,
-        };
-        var pos = SlotCalculator.Compute(virtualSlot, target);
-        WindowMover.MoveTo(hwnd, pos.X, pos.Y);
+            var hwnd = new WindowInteropHelper(this).Handle;
+            if (hwnd == IntPtr.Zero) { App.Log("position: hwnd zero"); return; }
+
+            var monitors = Monitors.WorkAreas();
+            App.Log($"position: {monitors.Count} monitor(s)");
+            for (int i = 0; i < monitors.Count; i++)
+            {
+                var m = monitors[i];
+                App.Log($"  mon{i + 1}: ({m.X},{m.Y}) {m.Width}x{m.Height}");
+            }
+            if (monitors.Count == 0) return;
+
+            var prefs = _profile.PickerWindow;
+            int idx = Math.Clamp(prefs.Monitor - 1, 0, monitors.Count - 1);
+            var target = monitors[idx];
+
+            var current = WindowMover.GetBounds(hwnd);
+            App.Log($"position: current bounds ({current.X},{current.Y}) {current.Width}x{current.Height}");
+
+            var virtualSlot = new Slot
+            {
+                Monitor = prefs.Monitor,
+                Anchor = prefs.Anchor,
+                Width = current.Width,
+                Height = current.Height,
+                OffsetX = prefs.OffsetX,
+                OffsetY = prefs.OffsetY,
+            };
+            var pos = SlotCalculator.Compute(virtualSlot, target);
+            App.Log($"position: target mon{idx + 1} anchor={prefs.Anchor} -> ({pos.X},{pos.Y}) {pos.Width}x{pos.Height}");
+
+            bool ok = WindowMover.MoveTo(hwnd, pos.X, pos.Y);
+            App.Log($"position: MoveTo returned {ok}");
+        }
+        catch (Exception ex)
+        {
+            App.Log($"position: EXCEPTION {ex}");
+        }
     }
 
     private void RefreshWindows()
@@ -101,7 +125,13 @@ public partial class MainWindow : Window
         foreach (var w in current.Where(w => !existing.Contains(w.Handle)))
             Windows.Add(w);
 
-        CountLabel.Text = Windows.Count == 1 ? "1 window" : $"{Windows.Count} windows";
+        // Don't clobber an in-progress status message; only update if the label
+        // is currently showing a window count (regular state).
+        if (CountLabel.Text.EndsWith(" window") || CountLabel.Text.EndsWith(" windows") || string.IsNullOrEmpty(CountLabel.Text))
+        {
+            CountLabel.Text = Windows.Count == 1 ? "1 window" : $"{Windows.Count} windows";
+            CountLabel.Foreground = (System.Windows.Media.Brush)FindResource("PanelTextFaint");
+        }
     }
 
     // ---- chrome ----
@@ -134,19 +164,37 @@ public partial class MainWindow : Window
 
     private void ThumbButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn) return;
-        if (btn.Tag is not IntPtr handle) return;
-
-        var info = Windows.FirstOrDefault(w => w.Handle == handle);
-        if (info is null) return;
+        // The DataContext of each templated button is the WindowInfo bound to that tile.
+        // Don't rely on Tag — IntPtr binding through Tag is a known WPF foot-gun where
+        // the value can be boxed in unexpected ways (or lost entirely on certain code paths).
+        if (sender is not Button btn) { ReportStatus("click: not a button"); return; }
+        if (btn.DataContext is not WindowInfo info) { ReportStatus("click: no WindowInfo bound"); return; }
 
         var slot = _resolver.Resolve(info.ProcessName, info.Title);
 
         var monitors = Monitors.WorkAreas();
-        if (monitors.Count == 0) return;
+        if (monitors.Count == 0) { ReportStatus("no monitors enumerated"); return; }
         int idx = Math.Clamp(slot.Monitor - 1, 0, monitors.Count - 1);
-
         var target = SlotCalculator.Compute(slot, monitors[idx]);
-        WindowMover.Recall(handle, target);
+
+        bool ok = WindowMover.Recall(info.Handle, target);
+        int err = ok ? 0 : System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+        App.Log($"recall '{info.Title}' [{info.ProcessName}] -> mon{idx + 1} {slot.Anchor} ({target.X},{target.Y}) {target.Width}x{target.Height}: ok={ok} err={err}");
+        ReportStatus(ok
+            ? $"recalled {TruncateTitle(info.Title)} → mon{idx + 1} {slot.Anchor} {target.Width}×{target.Height}"
+            : $"recall FAILED ({err}) for {TruncateTitle(info.Title)}");
+    }
+
+    private static string TruncateTitle(string s)
+        => s.Length <= 24 ? s : s.Substring(0, 21) + "...";
+
+    /// <summary>
+    /// Show a transient status message in the count label area. Reverts to the
+    /// window count on the next refresh tick.
+    /// </summary>
+    private void ReportStatus(string text)
+    {
+        CountLabel.Text = text;
+        CountLabel.Foreground = (System.Windows.Media.Brush)FindResource("PanelText");
     }
 }

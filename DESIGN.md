@@ -473,36 +473,47 @@ keep the grid manageable. Plan for filter UI in v1.1.
 
 ## 8. Milestones
 
-### v0.1 — Proof of Concept (1 evening)
+### v0.1 — Proof of Concept ✅ done
 
-- Enumerate windows
-- Show a single DWM thumbnail in a WPF window
+- Enumerate windows (`WindowMagnet.Core.WindowEnumerator`)
+- Show a single DWM thumbnail in a WPF window (`Controls/ThumbnailHost.cs`)
 - Verify it updates live with the source
 
-### v0.2 — Grid (1 weekend)
+### v0.2 — Grid ✅ done
 
-- Grid of N thumbnails auto-sized to the window
+- Grid of N thumbnails auto-sized to the window (`MainWindow.xaml` ItemsControl
+  bound to `ObservableCollection<WindowInfo>`)
 - Click handler that moves the source to a hardcoded slot on monitor 2
+  (`WindowMover.Recall` with `SWP_NOACTIVATE`)
 
-### v0.3 — Profiles (1 weekend)
+### v0.3 — Profiles ✅ done
 
-- JSON profile loading
-- Per-app slot resolution
+- JSON profile loading (`WindowMagnet.Config.ProfileStore`, camelCase
+  `System.Text.Json` with trailing-comma + comment tolerance)
+- Per-app slot resolution (`ProfileResolver`: processName wins, then
+  titleContains, then `DefaultSlot`)
 - A "default slot" for unmatched apps
+- Profile editor UI (`Dialogs/ProfileDialog`, `Dialogs/RuleEditDialog`)
+- `PickerWindow` config section so the picker's own position is profile-driven too
 
-### v0.4 — Polish (ongoing)
+### v0.4 — Polish 🟡 mostly done
 
-- Filter / search box
-- Profile editor UI
-- Tray icon and startup integration
-- Per-monitor DPI testing
-- Game-compatibility documentation per title
+- ✅ Filter / search box (`FilterBox` — filters both title and process name)
+- ✅ Profile editor UI (delivered as part of v0.3)
+- ✅ Tray icon and startup integration (`Tray/TrayController`, `HotkeyManager`
+  for ``Win+` ``, `StartupRegistration` for run-at-login)
+- ✅ Per-monitor DPI handling (PMv2 manifest, `Monitors.WorkAreas()` with
+  per-monitor `DpiScale`, `SlotCalculator` `ScaleDpi` flag)
+- ✅ Integrity-level awareness (`ProcessRights.CanMoveWindow` + dimmed-tile UI)
+- ✅ Centred-crop thumbnails (`ThumbnailManager.ComputeCenteredCrop`) so tiles
+  fill instead of letterboxing
+- ⏳ Game-compatibility documentation per title — pending real-game testing
 
 ### v1.0 — Release
 
-- Tested against 3–5 popular fullscreen-HDR titles
-- README with screenshots
-- MIT license, posted to GitHub
+- ⏳ Tested against 3–5 popular fullscreen-HDR titles
+- ⏳ README with screenshots
+- ⏳ License decision (MIT planned) and tagged GitHub release
 
 ---
 

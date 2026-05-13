@@ -53,11 +53,43 @@ without disturbing the source. Combine those three and the problem is solved.
 
 ## Status
 
-Design phase. See [`DESIGN.md`](./DESIGN.md) for the technical plan and
-[`PRIOR_ART.md`](./PRIOR_ART.md) for the landscape of existing tools and why none of
-them quite fit.
+Working WPF app — stamped `ver=0.3` in [`App.xaml.cs`](./src/WindowMagnet.App/App.xaml.cs).
 
-A clickable HTML mockup of the planned UI lives in [`mockup/index.html`](./mockup/index.html).
+What's done:
+
+- **Tray-resident picker** on monitor 2, summoned with ``Win+` `` or a left-click on
+  the tray icon, hidden again with the same.
+- **Live DWM thumbnails** of every visible top-level window, refreshed every 750ms
+  via a reconciling timer (existing thumbnails are left alone — DWM keeps them
+  updating; new/vanished sources are registered/unregistered).
+- **Per-app profile rules** loaded from `%APPDATA%\WindowMagnet\profiles.json`.
+  Match by process name or window title; falls through to a configurable default
+  slot. Click a tile → window flies (no focus stolen) to the resolved slot.
+- **Profile editor UI** built in — full `ProfileDialog` plus a per-rule
+  `RuleEditDialog`. Right-click a tile → "Add rule for chrome.exe…" pre-fills
+  the new-rule form with that window's process name.
+- **Integrity-level awareness** — tiles for higher-IL windows (e.g. an elevated
+  Task Manager) are dimmed at 31% opacity and the click handler reports
+  "needs admin to move" instead of failing silently with a Win32 ACCESS_DENIED.
+- **Per-monitor DPI (PMv2)** — `Monitors.WorkAreas()` reports per-monitor DPI
+  scale; `SlotCalculator` honours a `ScaleDpi` flag on each `Slot` so the same
+  profile lays out correctly across mixed-DPI displays.
+- **Run at login** — toggleable from the tray menu (per-user `HKCU\…\Run`,
+  no elevation required).
+
+What's still ahead (per [`DESIGN.md`](./DESIGN.md) §8 v1.0):
+
+- Per-game compatibility testing against real exclusive-fullscreen / HDR titles,
+  documented per title.
+- README screenshots.
+- License decision and a tagged release.
+
+See [`DESIGN.md`](./DESIGN.md) for the technical plan and [`PRIOR_ART.md`](./PRIOR_ART.md)
+for the landscape of existing tools and why none of them quite fit.
+
+A clickable HTML mockup of the original UI design lives in
+[`mockup/index.html`](./mockup/index.html). The shipping app's main window closely
+follows it — useful as a reference when reading the WPF XAML.
 
 ## Repo Layout
 

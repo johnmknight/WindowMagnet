@@ -42,24 +42,11 @@ public partial class MainWindow : Window
     {
         var helper = new WindowInteropHelper(this);
         _enumerator.Exclude(helper.Handle);
-        PositionOnMonitor2();
-    }
-
-    private void PositionOnMonitor2()
-    {
-        var mons = Monitors.WorkAreas();
-        if (mons.Count < 2) return;
-
-        // Heuristic: pick the monitor whose top-left isn't (0,0). On a typical
-        // dual-monitor setup, monitor 1 is at origin and monitor 2 is offset.
-        // Fall back to mons[1] if all have the same origin (single virtual).
-        var target = mons.FirstOrDefault(m => m.X != 0 || m.Y != 0);
-        if (target.Equals(default(WindowBounds))) target = mons[1];
-
-        // Park top-right corner of monitor 2 with a small inset.
-        const int inset = 20;
-        Left = target.Right - Width - inset;
-        Top  = target.Y + inset;
+        // v0.1: window opens at CenterScreen via WindowStartupLocation in XAML.
+        // Multi-monitor auto-positioning is deferred to v0.4 — WPF's Left/Top use
+        // device-independent units that don't map cleanly to physical-pixel monitor
+        // bounds without per-monitor DPI translation. The user can drag the picker
+        // to monitor 2 manually after first launch.
     }
 
     private void RefreshWindows()

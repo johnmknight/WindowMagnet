@@ -24,6 +24,9 @@ public sealed record WindowInfo(
     bool IsMinimized,
     bool CanMove)
 {
+    /// <summary>Convenience for XAML triggers/bindings — the inverse of CanMove.</summary>
+    public bool IsLocked => !CanMove;
+
     /// <summary>Tooltip text shown on the tile — title plus an admin hint when locked.</summary>
     public string Tooltip =>
         CanMove ? Title : Title + "\n(requires admin to move)";

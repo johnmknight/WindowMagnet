@@ -68,6 +68,11 @@ public sealed class WindowEnumerator
 
                 if (proc.Length > 0 && _excludeProcessNames.Contains(proc)) return true;
 
+                // Skip anything we can't move (higher integrity, protected process, etc.).
+                // No point showing a tile the user can never recall.
+                bool canMove = ProcessRights.CanMoveWindow(hWnd);
+                if (!canMove) return true;
+
                 list.Add(new WindowInfo(
                     hWnd,
                     title,
@@ -75,7 +80,7 @@ public sealed class WindowEnumerator
                     pid,
                     new WindowBounds(rect.Left, rect.Top, rect.Width, rect.Height),
                     NativeMethods.IsIconic(hWnd),
-                    ProcessRights.CanMoveWindow(hWnd)));
+                    canMove));
             }
             catch
             {

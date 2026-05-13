@@ -13,6 +13,11 @@ namespace WindowMagnet.App.Controls;
 ///
 /// One instance per source window. When the bound <see cref="SourceHandle"/>
 /// changes, the previous thumbnail is unregistered and a new one is registered.
+///
+/// IMPORTANT: DWM composites the thumbnail ABOVE WPF's render — so WPF Opacity
+/// on a parent Button does NOT dim the thumbnail. To visually grey a "locked"
+/// tile we have to pass a low opacity straight into DwmUpdateThumbnailProperties.
+/// Bind <see cref="IsLocked"/> in XAML to achieve that.
 /// </summary>
 public sealed class ThumbnailHost : FrameworkElement, IDisposable
 {
@@ -23,10 +28,27 @@ public sealed class ThumbnailHost : FrameworkElement, IDisposable
             typeof(ThumbnailHost),
             new PropertyMetadata(IntPtr.Zero, OnSourceHandleChanged));
 
+    public static readonly DependencyProperty IsLockedProperty =
+        DependencyProperty.Register(
+            nameof(IsLocked),
+            typeof(bool),
+            typeof(ThumbnailHost),
+            new PropertyMetadata(false, OnIsLockedChanged));
+
     public IntPtr SourceHandle
     {
         get => (IntPtr)GetValue(SourceHandleProperty);
         set => SetValue(SourceHandleProperty, value);
+    }
+
+    /// <summary>
+    /// When true the DWM thumbnail renders at ~30% opacity. Bind this to the
+    /// inverse of <c>CanMove</c> for the "you can't move this" treatment.
+    /// </summary>
+    public bool IsLocked
+    {
+        get => (bool)GetValue(IsLockedProperty);
+        set => SetValue(IsLockedProperty, value);
     }
 
     private ThumbnailManager? _manager;
@@ -66,6 +88,11 @@ public sealed class ThumbnailHost : FrameworkElement, IDisposable
         if (d is ThumbnailHost host) host.Bind();
     }
 
+    private static void OnIsLockedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is ThumbnailHost host) host.UpdateRect();
+    }
+
     private void Bind()
     {
         if (_destHwnd == IntPtr.Zero) return;
@@ -99,11 +126,6 @@ public sealed class ThumbnailHost : FrameworkElement, IDisposable
         if (ActualWidth <= 0 || ActualHeight <= 0) return;
 
         // The destination rect is in client-area coordinates of the host window.
-        // PointToScreen returns DIP-scaled coords for the WPF element; convert
-        // to physical pixels (the DWM API expects physical) using the host's
-        // VisualTransform. Under PerMonitorV2 awareness, WPF coords are already
-        // in physical pixels for windows positioned by hwnd, so for v0.1 we use
-        // a straightforward subtraction.
         var elementOnScreen = PointToScreen(new Point(0, 0));
         var windowOnScreen = _hostWindow.PointToScreen(new Point(0, 0));
 
@@ -112,7 +134,10 @@ public sealed class ThumbnailHost : FrameworkElement, IDisposable
         int w = (int)Math.Round(ActualWidth);
         int h = (int)Math.Round(ActualHeight);
 
-        _manager.UpdateRect(_thumb, x, y, w, h, opacity: 255, sourceClientAreaOnly: false);
+        // DWM opacity is a single byte 0..255. ~80 (~31%) reads as clearly dimmed
+        // without being so faint that you can't tell what window it is.
+        byte opacity = IsLocked ? (byte)80 : (byte)255;
+        _manager.UpdateRect(_thumb, x, y, w, h, opacity: opacity, sourceClientAreaOnly: false);
     }
 
     public void Dispose()

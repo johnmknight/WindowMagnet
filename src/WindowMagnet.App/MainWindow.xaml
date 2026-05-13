@@ -106,6 +106,7 @@
                             </Button.Style>
                             <StackPanel>
                                 <ctrl:ThumbnailHost SourceHandle="{Binding Handle}"
+                                                    IsLocked="{Binding IsLocked}"
                                                     Height="56" />
                                 <DockPanel LastChildFill="True" Margin="5,3,5,4">
                                     <Ellipse DockPanel.Dock="Left"

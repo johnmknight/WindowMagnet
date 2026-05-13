@@ -220,7 +220,7 @@
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="1.4*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
@@ -237,11 +237,18 @@
                                                            FontSize="11"
                                                            VerticalAlignment="Center"
                                                            TextTrimming="CharacterEllipsis" />
-                                                <Button Grid.Column="2" Style="{StaticResource IconBtn}"
-                                                        Content="✕"
-                                                        Tag="{Binding}"
-                                                        Click="DeleteRule_Click"
-                                                        ToolTip="Delete rule" />
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                    <Button Style="{StaticResource IconBtn}"
+                                                            Content="✎"
+                                                            Tag="{Binding}"
+                                                            Click="EditRule_Click"
+                                                            ToolTip="Edit rule" />
+                                                    <Button Style="{StaticResource IconBtn}"
+                                                            Content="✕"
+                                                            Tag="{Binding}"
+                                                            Click="DeleteRule_Click"
+                                                            ToolTip="Delete rule" />
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

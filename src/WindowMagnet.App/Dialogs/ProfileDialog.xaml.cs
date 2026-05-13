@@ -209,16 +209,35 @@ public partial class ProfileDialog : Window
 
     private void AddRule_Click(object sender, RoutedEventArgs e)
     {
-        // v1 add-flow: create a placeholder rule mirroring the current default slot,
-        // matching by process name. User will edit the process name in-place once we
-        // build the inline edit UI (phase 2); for now they can delete + add as needed.
-        var defaultSlot = ReadDefaultSlot();
-        var newRule = new Rule
+        // New-rule defaults: empty process name, today's default slot.
+        var template = new RuleRow
         {
-            Match = new Match { ProcessName = "newapp.exe" },
-            Slot = defaultSlot,
+            ProcessName = "",
+            Slot = ReadDefaultSlot(),
         };
-        Rules.Add(RuleRow.From(newRule));
+        if (LaunchRuleEditor(template, isNew: true) is { } edited)
+        {
+            Rules.Add(edited);
+        }
+    }
+
+    private void EditRule_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is RuleRow row)
+        {
+            // Clone the row before editing so a Cancel doesn't leave mutated state.
+            var working = new RuleRow
+            {
+                ProcessName = row.ProcessName,
+                TitleContains = row.TitleContains,
+                Slot = row.Slot,
+            };
+            if (LaunchRuleEditor(working, isNew: false) is { } edited)
+            {
+                int idx = Rules.IndexOf(row);
+                if (idx >= 0) Rules[idx] = edited; else Rules.Add(edited);
+            }
+        }
     }
 
     private void DeleteRule_Click(object sender, RoutedEventArgs e)
@@ -227,6 +246,13 @@ public partial class ProfileDialog : Window
         {
             Rules.Remove(row);
         }
+    }
+
+    private RuleRow? LaunchRuleEditor(RuleRow seed, bool isNew)
+    {
+        var monitors = Monitors.WorkAreas();
+        var dlg = new RuleEditDialog(seed, monitors, isNew) { Owner = this };
+        return dlg.ShowDialog() == true ? dlg.ResultRow : null;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)

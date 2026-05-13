@@ -1,0 +1,292 @@
+<Window x:Class="WindowMagnet.App.Dialogs.ProfileDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WindowMagnet — Profile"
+        Width="720"
+        MaxHeight="800"
+        SizeToContent="Height"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        FontFamily="Segoe UI Variable Display, Segoe UI Variable, Segoe UI">
+
+    <Border Background="{StaticResource PanelBackground}"
+            BorderBrush="{StaticResource PanelBorder}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Title bar — draggable, with min/close -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource PanelTitleBar}"
+                    BorderBrush="{StaticResource PanelBorder}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="8,8,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid Margin="14,8,10,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="16" Height="16"
+                            Background="{StaticResource AccentBrush}"
+                            CornerRadius="3" Margin="0,0,10,0">
+                        <TextBlock Text="W" Foreground="White" FontSize="10"
+                                   FontWeight="Medium"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="WindowMagnet — Profile"
+                               Foreground="{StaticResource PanelText}"
+                               FontSize="12" VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Style="{StaticResource ChromeBtn}" Content="✕"
+                            Click="Close_Click" ToolTip="Close" />
+                </Grid>
+            </Border>
+
+            <!-- Header strip -->
+            <StackPanel Grid.Row="1" Margin="24,18,24,6">
+                <TextBlock Text="Profile settings"
+                           Foreground="{StaticResource PanelText}"
+                           FontSize="20" FontWeight="Medium" />
+                <TextBlock Text="Where the picker lives and where recalled windows land."
+                           Foreground="{StaticResource PanelTextFaint}"
+                           FontSize="12" Margin="0,2,0,0" />
+            </StackPanel>
+
+            <!-- Body — scrollable -->
+            <ScrollViewer Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="24,12,24,18">
+
+                    <!-- ===== Picker window card ===== -->
+                    <Border Style="{StaticResource SettingsCard}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Picker window"
+                                           Foreground="{StaticResource PanelText}"
+                                           FontSize="13" FontWeight="Medium"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="where the WindowMagnet picker itself shows up"
+                                           Foreground="{StaticResource PanelTextFaint}"
+                                           FontSize="11"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Monitor selector -->
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="Monitor" Style="{StaticResource SectionLabel}" Margin="0,0,0,6" />
+                                    <StackPanel x:Name="PickerMonitorRow" Orientation="Horizontal" />
+                                </StackPanel>
+
+                                <!-- Anchor grid -->
+                                <StackPanel Grid.Row="0" Grid.Column="1" Margin="16,0,0,0">
+                                    <TextBlock Text="Anchor" Style="{StaticResource SectionLabel}" Margin="0,0,0,6" />
+                                    <UniformGrid x:Name="PickerAnchorGrid" Columns="3" Rows="3" Width="124" Height="124" />
+                                    <TextBlock x:Name="PickerAnchorLabel" Text="top-right"
+                                               Foreground="{StaticResource PanelTextFaint}"
+                                               FontSize="11" Margin="0,6,0,0" />
+                                </StackPanel>
+
+                                <!-- Offset X/Y -->
+                                <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                        <TextBlock Text="Inset from edge X (px)" Style="{StaticResource SectionLabel}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="PickerOffsetX" Style="{StaticResource FluentInput}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                        <TextBlock Text="Inset from edge Y (px)" Style="{StaticResource SectionLabel}" Margin="0,0,0,4" />
+                                        <TextBox x:Name="PickerOffsetY" Style="{StaticResource FluentInput}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ===== Default slot card ===== -->
+                    <Border Style="{StaticResource SettingsCard}" Margin="0,12,0,0">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Default landing slot"
+                                           Foreground="{StaticResource PanelText}"
+                                           FontSize="13" FontWeight="Medium"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="applied to any window without a specific rule"
+                                           Foreground="{StaticResource PanelTextFaint}"
+                                           FontSize="11"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Monitor" Style="{StaticResource SectionLabel}" Margin="0,0,0,4" />
+                                    <ComboBox x:Name="DefaultMonitorCombo" Style="{StaticResource FluentCombo}" />
+
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                            <TextBlock Text="Width (px)" Style="{StaticResource SectionLabel}" Margin="0,0,0,4" />
+                                            <TextBox x:Name="DefaultWidth" Style="{StaticResource FluentInput}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                            <TextBlock Text="Height (px)" Style="{StaticResource SectionLabel}" Margin="0,0,0,4" />
+                                            <TextBox x:Name="DefaultHeight" Style="{StaticResource FluentInput}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                                    <TextBlock Text="Anchor" Style="{StaticResource SectionLabel}" Margin="0,0,0,6" />
+                                    <UniformGrid x:Name="DefaultAnchorGrid" Columns="3" Rows="3" Width="124" Height="124" />
+                                    <TextBlock x:Name="DefaultAnchorLabel" Text="top-center"
+                                               Foreground="{StaticResource PanelTextFaint}"
+                                               FontSize="11" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ===== Per-app rules card ===== -->
+                    <Border Style="{StaticResource SettingsCard}" Margin="0,12,0,0">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Per-app rules"
+                                           Foreground="{StaticResource PanelText}"
+                                           FontSize="13" FontWeight="Medium"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="override the default for specific windows"
+                                           Foreground="{StaticResource PanelTextFaint}"
+                                           FontSize="11"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+
+                            <ItemsControl x:Name="RuleList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#0F1218"
+                                                BorderBrush="{StaticResource CardBorder}"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Padding="10,7"
+                                                Margin="0,0,0,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding MatchKindLabel}" Style="{StaticResource SectionLabel}" />
+                                                    <TextBlock Text="{Binding MatchValue}"
+                                                               Foreground="{StaticResource PanelText}"
+                                                               FontFamily="Cascadia Mono, Consolas"
+                                                               FontSize="12"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding SlotSummary}"
+                                                           Foreground="{StaticResource PanelTextMuted}"
+                                                           FontSize="11"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <Button Grid.Column="2" Style="{StaticResource IconBtn}"
+                                                        Content="✕"
+                                                        Tag="{Binding}"
+                                                        Click="DeleteRule_Click"
+                                                        ToolTip="Delete rule" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Button Style="{StaticResource SecondaryBtn}"
+                                    Content="+ Add rule"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,4,0,0"
+                                    Click="AddRule_Click" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Storage hint -->
+                    <Border Background="#0E1116" BorderBrush="{StaticResource CardBorder}" BorderThickness="1"
+                            CornerRadius="4" Padding="10,7" Margin="0,12,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Saved to "
+                                       Foreground="{StaticResource PanelTextFaint}"
+                                       FontSize="11" VerticalAlignment="Center" />
+                            <TextBlock x:Name="StoragePathLabel"
+                                       Foreground="{StaticResource PanelTextMuted}"
+                                       FontFamily="Cascadia Mono, Consolas"
+                                       FontSize="11"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Border Grid.Row="3"
+                    Background="{StaticResource PanelTitleBar}"
+                    BorderBrush="{StaticResource PanelBorder}"
+                    BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,8,8">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="24,14,24,16">
+                    <Button Style="{StaticResource SecondaryBtn}" Content="Cancel"
+                            Click="Cancel_Click" Margin="0,0,8,0" />
+                    <Button Style="{StaticResource PrimaryBtn}" Content="Save"
+                            Click="Save_Click" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using WindowMagnet.App.Dialogs;
 using WindowMagnet.Config;
 using WindowMagnet.Core;
 
@@ -146,15 +147,17 @@ public partial class MainWindow : Window
     private void Refresh_Click(object sender, RoutedEventArgs e) => RefreshWindows();
     private void Profiles_Click(object sender, RoutedEventArgs e)
     {
-        // v0.1: open profiles.json in the default editor. A proper editor UI comes in v0.4.
-        try
+        // Open the proper editor dialog. On Save, reload the profile so the resolver
+        // picks up new rules immediately (next click will route by the updated config).
+        // Picker-window placement changes apply on next launch — moving the live
+        // picker mid-session would be jarring.
+        var dlg = new ProfileDialog(_store, _profile) { Owner = this };
+        if (dlg.ShowDialog() == true)
         {
-            if (!System.IO.File.Exists(_store.Path)) _store.Save(_store.Load());
-            Process.Start(new ProcessStartInfo(_store.Path) { UseShellExecute = true });
-        }
-        catch
-        {
-            // ignore — best effort
+            _profile = _store.Load();
+            _resolver = new ProfileResolver(_profile);
+            App.Log("profile: reloaded after dialog save");
+            ReportStatus("profile saved");
         }
     }
 

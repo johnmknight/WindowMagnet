@@ -4,6 +4,7 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
 
+        <!-- ===== Palette ===== -->
         <SolidColorBrush x:Key="PanelBackground" Color="#0E1116" />
         <SolidColorBrush x:Key="PanelSurface"    Color="#181C24" />
         <SolidColorBrush x:Key="PanelTitleBar"   Color="#15181F" />
@@ -14,6 +15,15 @@
         <SolidColorBrush x:Key="AccentBrush"     Color="#4C8CFF" />
         <SolidColorBrush x:Key="LiveDotBrush"    Color="#19C37D" />
         <SolidColorBrush x:Key="HoverBorderBrush" Color="#4C8CFF" />
+
+        <!-- Fluent / Win11 inspired (used by ProfileDialog) -->
+        <SolidColorBrush x:Key="FluentAccent"        Color="#60CDFF" />
+        <SolidColorBrush x:Key="FluentAccentFill"    Color="#1F60CDFF" />
+        <SolidColorBrush x:Key="FluentAccentBorder"  Color="#8C60CDFF" />
+        <SolidColorBrush x:Key="CardSurface"         Color="#1A1D24" />
+        <SolidColorBrush x:Key="CardSurfaceSubtle"   Color="#15171D" />
+        <SolidColorBrush x:Key="CardBorder"          Color="#262A33" />
+        <SolidColorBrush x:Key="InputBackground"     Color="#0E1116" />
 
         <!-- Title-bar chrome buttons (min, close) -->
         <Style x:Key="ChromeBtn" TargetType="Button">
@@ -111,6 +121,202 @@
             <Setter Property="Padding" Value="6,3" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- ===== Fluent-flavour styles for ProfileDialog ===== -->
+
+        <!-- A card-shaped panel that groups a section's controls. -->
+        <Style x:Key="SettingsCard" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardSurface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="16,14" />
+        </Style>
+
+        <!-- Small uppercase micro-label used above each rule row. -->
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PanelTextFaint}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        </Style>
+
+        <!-- Standard text input used for offsets, widths, heights. -->
+        <Style x:Key="FluentInput" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource InputBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
+            <Setter Property="Foreground" Value="{StaticResource PanelText}" />
+            <Setter Property="CaretBrush" Value="{StaticResource PanelText}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- Match-style for ComboBox (default-slot monitor picker). -->
+        <Style x:Key="FluentCombo" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource InputBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
+            <Setter Property="Foreground" Value="{StaticResource PanelText}" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="30" />
+        </Style>
+
+        <!-- Primary action button — Save. Filled with accent. -->
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource FluentAccent}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FluentAccent}" />
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#7ED8FF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary button — Cancel, Add Rule, raw-JSON link. -->
+        <Style x:Key="SecondaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="#0E1116" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorder}" />
+            <Setter Property="Foreground" Value="{StaticResource PanelText}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource FluentAccentBorder}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--
+            Anchor cell — one of nine in a 3x3 grid. Uses RadioButton so the group
+            enforces single-selection; the template hides the radio dot and just
+            tints the cell when checked.
+        -->
+        <Style x:Key="AnchorCell" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource CardBorder}"
+                                BorderThickness="1"
+                                CornerRadius="3" />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource FluentAccentFill}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource FluentAccentBorder}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource FluentAccentBorder}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--
+            Monitor card — one of however-many monitors. Same RadioButton trick,
+            but the card content (the little screen visualisation) goes inside.
+        -->
+        <Style x:Key="MonitorCard" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="MinWidth" Value="110" />
+            <Setter Property="Foreground" Value="{StaticResource PanelText}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource CardBorder}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource FluentAccentFill}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource FluentAccentBorder}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource FluentAccentBorder}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Tiny round icon button used for edit/delete on rule rows. -->
+        <Style x:Key="IconBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource PanelTextMuted}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#262C36" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
     </Application.Resources>

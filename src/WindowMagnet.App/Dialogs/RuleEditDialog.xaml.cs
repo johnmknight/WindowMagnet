@@ -32,7 +32,7 @@ public partial class RuleEditDialog : Window
     /// <summary>The edited row, populated on Save. Null until then.</summary>
     public ProfileDialog.RuleRow? ResultRow { get; private set; }
 
-    public RuleEditDialog(ProfileDialog.RuleRow row, IReadOnlyList<WindowBounds> monitors, bool isNew)
+    public RuleEditDialog(ProfileDialog.RuleRow row, IReadOnlyList<MonitorInfo> monitors, bool isNew)
     {
         InitializeComponent();
 
@@ -51,6 +51,9 @@ public partial class RuleEditDialog : Window
         BuildMonitorCombo(MonitorCombo, monitors, row.Slot.Monitor);
         WidthBox.Text = row.Slot.Width.ToString();
         HeightBox.Text = row.Slot.Height.ToString();
+        // For a brand-new rule default the DPI toggle ON (better defaults going forward).
+        // When editing an existing rule, preserve whatever was saved.
+        ScaleDpiToggle.IsChecked = isNew ? true : row.Slot.ScaleDpi;
         _selectedAnchor = row.Slot.Anchor;
         BuildAnchorGrid(AnchorGrid, _selectedAnchor);
         AnchorLabel.Text = _selectedAnchor;
@@ -58,7 +61,7 @@ public partial class RuleEditDialog : Window
 
     // ===== Layout builders =====
 
-    private static void BuildMonitorCombo(ComboBox combo, IReadOnlyList<WindowBounds> monitors, int selected)
+    private static void BuildMonitorCombo(ComboBox combo, IReadOnlyList<MonitorInfo> monitors, int selected)
     {
         combo.Items.Clear();
         for (int i = 0; i < monitors.Count; i++)
@@ -159,6 +162,7 @@ public partial class RuleEditDialog : Window
                 Anchor = _selectedAnchor,
                 Width = width,
                 Height = height,
+                ScaleDpi = ScaleDpiToggle.IsChecked == true,
             },
         };
         DialogResult = true;

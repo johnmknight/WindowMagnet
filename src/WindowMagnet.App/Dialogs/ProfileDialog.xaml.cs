@@ -53,6 +53,7 @@ public partial class ProfileDialog : Window
         PickerAnchorLabel.Text = _pickerAnchor;
         PickerOffsetX.Text = current.PickerWindow.OffsetX.ToString();
         PickerOffsetY.Text = current.PickerWindow.OffsetY.ToString();
+        PickerScaleDpiToggle.IsChecked = current.PickerWindow.ScaleDpi;
 
         BuildMonitorCombo(DefaultMonitorCombo, monitors, current.DefaultSlot.Monitor);
         BuildAnchorGrid(DefaultAnchorGrid, current.DefaultSlot.Anchor, DefaultAnchor_Checked);
@@ -60,6 +61,7 @@ public partial class ProfileDialog : Window
         DefaultAnchorLabel.Text = _defaultAnchor;
         DefaultWidth.Text = current.DefaultSlot.Width.ToString();
         DefaultHeight.Text = current.DefaultSlot.Height.ToString();
+        DefaultScaleDpiToggle.IsChecked = current.DefaultSlot.ScaleDpi;
 
         foreach (var r in current.Rules) Rules.Add(RuleRow.From(r));
 
@@ -68,7 +70,7 @@ public partial class ProfileDialog : Window
 
     // ===== Layout builders =====
 
-    private void BuildMonitorRadios(StackPanel host, IReadOnlyList<WindowBounds> monitors,
+    private void BuildMonitorRadios(StackPanel host, IReadOnlyList<MonitorInfo> monitors,
                                     int selectedMonitor, RoutedEventHandler onChecked)
     {
         host.Children.Clear();
@@ -88,7 +90,7 @@ public partial class ProfileDialog : Window
         }
     }
 
-    private static UIElement MakeMonitorContent(int monitorNumber, WindowBounds m)
+    private static UIElement MakeMonitorContent(int monitorNumber, MonitorInfo m)
     {
         var stack = new StackPanel();
         // Aspect-correct mini representation (capped at 70px max dim).
@@ -127,7 +129,7 @@ public partial class ProfileDialog : Window
         return stack;
     }
 
-    private void BuildMonitorCombo(ComboBox combo, IReadOnlyList<WindowBounds> monitors, int selected)
+    private void BuildMonitorCombo(ComboBox combo, IReadOnlyList<MonitorInfo> monitors, int selected)
     {
         combo.Items.Clear();
         for (int i = 0; i < monitors.Count; i++)
@@ -288,6 +290,7 @@ public partial class ProfileDialog : Window
             Anchor = _pickerAnchor,
             OffsetX = ParseInt(PickerOffsetX.Text, 20),
             OffsetY = ParseInt(PickerOffsetY.Text, 20),
+            ScaleDpi = PickerScaleDpiToggle.IsChecked == true,
         };
 
         var defaultSlot = new Slot
@@ -298,6 +301,7 @@ public partial class ProfileDialog : Window
             Height = ParseInt(DefaultHeight.Text, 2400),
             OffsetX = 0,
             OffsetY = 0,
+            ScaleDpi = DefaultScaleDpiToggle.IsChecked == true,
         };
 
         return _initial with
@@ -317,6 +321,7 @@ public partial class ProfileDialog : Window
             Anchor = _defaultAnchor,
             Width = ParseInt(DefaultWidth.Text, 1800),
             Height = ParseInt(DefaultHeight.Text, 2400),
+            ScaleDpi = DefaultScaleDpiToggle.IsChecked == true,
         };
     }
 

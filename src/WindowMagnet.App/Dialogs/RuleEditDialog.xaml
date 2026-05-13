@@ -130,6 +130,12 @@
                                             <TextBox x:Name="HeightBox" Style="{StaticResource FluentInput}" />
                                         </StackPanel>
                                     </Grid>
+
+                                    <CheckBox x:Name="ScaleDpiToggle"
+                                              Style="{StaticResource FluentToggle}"
+                                              Content="Scale dimensions by monitor DPI"
+                                              Margin="0,10,0,0"
+                                              ToolTip="When on, Width / Height above are treated as logical (100%-DPI) pixels and multiplied by the target monitor's scale." />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Margin="16,0,0,0">

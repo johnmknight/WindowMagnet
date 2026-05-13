@@ -82,6 +82,17 @@ internal static class NativeMethods
     [DllImport("dwmapi.dll")]
     internal static extern int DwmGetWindowAttribute(IntPtr hwnd, uint dwAttribute, out int pvAttribute, int cbAttribute);
 
+    // ---- shcore (per-monitor DPI) ----
+
+    /// <summary>
+    /// GetDpiForMonitor returns the dpi at <paramref name="dpiType"/>=MDT_EFFECTIVE_DPI
+    /// in the scale Windows reports for that monitor (96 = 100%, 144 = 150%, 192 = 200%).
+    /// </summary>
+    [DllImport("Shcore.dll")]
+    internal static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+    internal const int MDT_EFFECTIVE_DPI = 0;
+
     // ---- kernel32 / advapi32 (integrity checks) ----
 
     [DllImport("kernel32.dll", SetLastError = true)]

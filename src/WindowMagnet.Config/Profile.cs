@@ -35,6 +35,15 @@ public sealed record PickerWindow
 
     public int OffsetX { get; init; } = 20;
     public int OffsetY { get; init; } = 20;
+
+    /// <summary>
+    /// When true, treat <see cref="OffsetX"/> / <see cref="OffsetY"/> as logical
+    /// (100%-DPI) pixels and multiply by the target monitor's DPI scale when
+    /// placing the picker. Defaults to false so existing profiles keep behaving
+    /// the same way they did at write time. New profiles created via the dialog
+    /// default to true so picker placement feels consistent across DPI changes.
+    /// </summary>
+    public bool ScaleDpi { get; init; } = false;
 }
 
 /// <summary>
@@ -54,6 +63,15 @@ public sealed record Slot
     public int Height { get; init; } = 800;
     public int OffsetX { get; init; }
     public int OffsetY { get; init; }
+
+    /// <summary>
+    /// When true, all of <see cref="Width"/>, <see cref="Height"/>, <see cref="OffsetX"/>,
+    /// <see cref="OffsetY"/> are treated as logical (100%-DPI) pixels and multiplied by
+    /// the target monitor's DPI scale at recall time. Defaults to false so existing
+    /// profiles keep their explicit physical-pixel sizing. New default slots / rules
+    /// created via the dialog opt in.
+    /// </summary>
+    public bool ScaleDpi { get; init; } = false;
 }
 
 /// <summary>A match + slot pair.</summary>

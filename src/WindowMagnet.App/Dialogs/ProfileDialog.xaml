@@ -97,6 +97,7 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
                                 <!-- Monitor selector -->
@@ -129,6 +130,13 @@
                                         <TextBox x:Name="PickerOffsetY" Style="{StaticResource FluentInput}" />
                                     </StackPanel>
                                 </Grid>
+
+                                <!-- DPI scale toggle -->
+                                <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Margin="0,10,0,0"
+                                          x:Name="PickerScaleDpiToggle"
+                                          Style="{StaticResource FluentToggle}"
+                                          Content="Scale offsets by monitor DPI"
+                                          ToolTip="When on, the X/Y offsets above are treated as logical (100%-DPI) pixels and multiplied by the target monitor's scale. Recommended." />
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -176,6 +184,12 @@
                                             <TextBox x:Name="DefaultHeight" Style="{StaticResource FluentInput}" />
                                         </StackPanel>
                                     </Grid>
+
+                                    <CheckBox x:Name="DefaultScaleDpiToggle"
+                                              Style="{StaticResource FluentToggle}"
+                                              Content="Scale dimensions by monitor DPI"
+                                              Margin="0,10,0,0"
+                                              ToolTip="When on, Width / Height above are treated as logical (100%-DPI) pixels and multiplied by the target monitor's scale. Recommended for portability between monitors at different DPI." />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Margin="16,0,0,0">

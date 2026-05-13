@@ -119,4 +119,69 @@ public class SlotCalculatorTests
         var b = SlotCalculator.Compute(slot, Mon2);
         Assert.Equal(1920 + (1920 - 1000) / 2, b.X);
     }
+
+    // ===== DPI scaling =====
+
+    [Fact]
+    public void DpiScaleOff_LeavesDimensionsAlone()
+    {
+        // ScaleDpi=false means the dpiScale argument is ignored — preserves v0.2
+        // back-compat where Width/Height were physical pixels authored manually.
+        var slot = new Slot { Anchor = "top-left", Width = 1200, Height = 800, ScaleDpi = false };
+        var b = SlotCalculator.Compute(slot, Mon2, dpiScale: 1.5);
+        Assert.Equal(1920, b.X);
+        Assert.Equal(0, b.Y);
+        Assert.Equal(1200, b.Width);
+        Assert.Equal(800, b.Height);
+    }
+
+    [Fact]
+    public void DpiScaleOn_ScalesWidthHeight()
+    {
+        var slot = new Slot { Anchor = "top-left", Width = 1200, Height = 800, ScaleDpi = true };
+        var b = SlotCalculator.Compute(slot, Mon2, dpiScale: 1.5);
+        Assert.Equal(1920, b.X);
+        Assert.Equal(0, b.Y);
+        Assert.Equal(1800, b.Width);
+        Assert.Equal(1200, b.Height);
+    }
+
+    [Fact]
+    public void DpiScaleOn_ScalesOffsetsToo()
+    {
+        // top-right at 150% DPI: 20-DIP inset should land at 30-physical-pixel inset.
+        var slot = new Slot
+        {
+            Anchor = "top-right", Width = 1000, Height = 700, OffsetX = 20, OffsetY = 10,
+            ScaleDpi = true,
+        };
+        var b = SlotCalculator.Compute(slot, Mon2, dpiScale: 1.5);
+        // Width scaled to 1500, OffsetX scaled to 30 -> inset 30 from right edge.
+        Assert.Equal(1920 + 1920 - 1500 - 30, b.X);
+        // OffsetY scaled to 15.
+        Assert.Equal(15, b.Y);
+        Assert.Equal(1500, b.Width);
+        Assert.Equal(1050, b.Height);
+    }
+
+    [Fact]
+    public void DpiScaleOn_With2xDpi_DoublesWidthHeight()
+    {
+        var slot = new Slot { Anchor = "middle", Width = 800, Height = 600, ScaleDpi = true };
+        var b = SlotCalculator.Compute(slot, Mon2, dpiScale: 2.0);
+        Assert.Equal(1600, b.Width);
+        Assert.Equal(1200, b.Height);
+    }
+
+    [Fact]
+    public void DpiScaleOn_ScaleEqualsOne_BehavesLikeOff()
+    {
+        // 1.0x = no-op even when ScaleDpi is on. Important so tests that don't
+        // pass a dpiScale (default 1.0) still get predictable arithmetic.
+        var slot = new Slot { Anchor = "top", Width = 1000, Height = 600, ScaleDpi = true };
+        var b = SlotCalculator.Compute(slot, Mon2, dpiScale: 1.0);
+        Assert.Equal(1920 + (1920 - 1000) / 2, b.X);
+        Assert.Equal(1000, b.Width);
+        Assert.Equal(600, b.Height);
+    }
 }

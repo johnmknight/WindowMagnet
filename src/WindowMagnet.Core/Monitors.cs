@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using WindowMagnet.Core.Native;
 
 namespace WindowMagnet.Core;
@@ -13,51 +14,54 @@ namespace WindowMagnet.Core;
 public static class Monitors
 {
     /// <summary>All monitor rectangles (full bounds, primary first).</summary>
-    public static IReadOnlyList<WindowBounds> All()
-    {
-        var raw = new List<(WindowBounds bounds, bool isPrimary)>(2);
-        NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr h, IntPtr hdc, ref RECT r, IntPtr p) =>
-        {
-            var info = new MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf<MONITORINFO>() };
-            bool isPrimary = false;
-            WindowBounds b;
-            if (NativeMethods.GetMonitorInfo(h, ref info))
-            {
-                isPrimary = (info.dwFlags & NativeMethods.MONITORINFOF_PRIMARY) != 0;
-                b = new WindowBounds(info.rcMonitor.Left, info.rcMonitor.Top, info.rcMonitor.Width, info.rcMonitor.Height);
-            }
-            else
-            {
-                b = new WindowBounds(r.Left, r.Top, r.Width, r.Height);
-            }
-            raw.Add((b, isPrimary));
-            return true;
-        }, IntPtr.Zero);
-        return raw.OrderByDescending(x => x.isPrimary).Select(x => x.bounds).ToList();
-    }
+    public static IReadOnlyList<MonitorInfo> All() => Enumerate(workArea: false);
 
     /// <summary>Work areas (full monitor bounds minus taskbar), primary first.</summary>
-    public static IReadOnlyList<WindowBounds> WorkAreas()
+    public static IReadOnlyList<MonitorInfo> WorkAreas() => Enumerate(workArea: true);
+
+    private static IReadOnlyList<MonitorInfo> Enumerate(bool workArea)
     {
-        var raw = new List<(WindowBounds bounds, bool isPrimary)>(2);
+        var raw = new List<(MonitorInfo info, bool isPrimary)>(2);
         NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr h, IntPtr hdc, ref RECT r, IntPtr p) =>
         {
-            var info = new MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf<MONITORINFO>() };
+            var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
             bool isPrimary = false;
             WindowBounds b;
             if (NativeMethods.GetMonitorInfo(h, ref info))
             {
                 isPrimary = (info.dwFlags & NativeMethods.MONITORINFOF_PRIMARY) != 0;
-                var w = info.rcWork;
-                b = new WindowBounds(w.Left, w.Top, w.Width, w.Height);
+                var src = workArea ? info.rcWork : info.rcMonitor;
+                b = new WindowBounds(src.Left, src.Top, src.Width, src.Height);
             }
             else
             {
                 b = new WindowBounds(r.Left, r.Top, r.Width, r.Height);
             }
-            raw.Add((b, isPrimary));
+            // 96 = 100%. Anything else means per-monitor scaling is in effect on this display.
+            double dpi = 1.0;
+            if (NativeMethods.GetDpiForMonitor(h, NativeMethods.MDT_EFFECTIVE_DPI, out uint dx, out _) == 0
+                && dx > 0)
+            {
+                dpi = dx / 96.0;
+            }
+            raw.Add((new MonitorInfo(b, dpi), isPrimary));
             return true;
         }, IntPtr.Zero);
-        return raw.OrderByDescending(x => x.isPrimary).Select(x => x.bounds).ToList();
+        return raw.OrderByDescending(x => x.isPrimary).Select(x => x.info).ToList();
     }
+}
+
+/// <summary>
+/// Bounds + per-monitor DPI scale (1.0 = 100%, 1.5 = 150%, etc.). Exposes the
+/// bounds members directly so existing call sites that read <c>X/Y/Width/Height</c>
+/// keep working unchanged.
+/// </summary>
+public sealed record MonitorInfo(WindowBounds Bounds, double DpiScale)
+{
+    public int X      => Bounds.X;
+    public int Y      => Bounds.Y;
+    public int Width  => Bounds.Width;
+    public int Height => Bounds.Height;
+    public int Right  => Bounds.Right;
+    public int Bottom => Bounds.Bottom;
 }

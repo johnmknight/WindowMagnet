@@ -293,6 +293,46 @@
             </Setter>
         </Style>
 
+        <!--
+            Fluent-style toggle switch built from a CheckBox so existing data-binding
+            and IsChecked semantics work. Visually: 32x18 pill track + 12px thumb that
+            shifts to the right when checked. Used for the per-slot ScaleDpi flag.
+        -->
+        <Style x:Key="FluentToggle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource PanelTextMuted}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="Track" Width="32" Height="18" CornerRadius="9"
+                                    Background="{StaticResource CardSurfaceSubtle}"
+                                    BorderBrush="{StaticResource CardBorder}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <Ellipse x:Name="Thumb" Width="12" Height="12"
+                                         Fill="{StaticResource PanelTextMuted}"
+                                         HorizontalAlignment="Left"
+                                         Margin="3,0,0,0"
+                                         VerticalAlignment="Center" />
+                            </Border>
+                            <ContentPresenter Margin="9,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{StaticResource FluentAccent}" />
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource FluentAccent}" />
+                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0" />
+                                <Setter TargetName="Thumb" Property="Fill" Value="{StaticResource PanelBackground}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Tiny round icon button used for edit/delete on rule rows. -->
         <Style x:Key="IconBtn" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />

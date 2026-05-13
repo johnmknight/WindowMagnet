@@ -73,7 +73,7 @@ public partial class MainWindow : Window
             for (int i = 0; i < monitors.Count; i++)
             {
                 var m = monitors[i];
-                App.Log($"  mon{i + 1}: ({m.X},{m.Y}) {m.Width}x{m.Height}");
+                App.Log($"  mon{i + 1}: ({m.X},{m.Y}) {m.Width}x{m.Height} @ {m.DpiScale:0.##}x");
             }
             if (monitors.Count == 0) return;
 
@@ -84,17 +84,23 @@ public partial class MainWindow : Window
             var current = WindowMover.GetBounds(hwnd);
             App.Log($"position: current bounds ({current.X},{current.Y}) {current.Width}x{current.Height}");
 
+            // Picker Width/Height already reflect WPF's per-monitor DPI scaling (they
+            // come from the live HWND in physical pixels). Only the offsets are
+            // user-authored and need DPI scaling — apply it manually so we don't have
+            // SlotCalculator scale Width/Height on top of WPF's already-scaled values.
+            double scale = prefs.ScaleDpi ? target.DpiScale : 1.0;
             var virtualSlot = new Slot
             {
                 Monitor = prefs.Monitor,
                 Anchor = prefs.Anchor,
                 Width = current.Width,
                 Height = current.Height,
-                OffsetX = prefs.OffsetX,
-                OffsetY = prefs.OffsetY,
+                OffsetX = (int)Math.Round(prefs.OffsetX * scale),
+                OffsetY = (int)Math.Round(prefs.OffsetY * scale),
+                ScaleDpi = false, // we already scaled the offsets above
             };
             var pos = SlotCalculator.Compute(virtualSlot, target);
-            App.Log($"position: target mon{idx + 1} anchor={prefs.Anchor} -> ({pos.X},{pos.Y}) {pos.Width}x{pos.Height}");
+            App.Log($"position: target mon{idx + 1} anchor={prefs.Anchor} dpiScale={scale:0.##} -> ({pos.X},{pos.Y}) {pos.Width}x{pos.Height}");
 
             bool ok = WindowMover.MoveTo(hwnd, pos.X, pos.Y);
             App.Log($"position: MoveTo returned {ok}");
@@ -187,11 +193,12 @@ public partial class MainWindow : Window
         var monitors = Monitors.WorkAreas();
         if (monitors.Count == 0) { ReportStatus("no monitors enumerated"); return; }
         int idx = Math.Clamp(slot.Monitor - 1, 0, monitors.Count - 1);
-        var target = SlotCalculator.Compute(slot, monitors[idx]);
+        var monitor = monitors[idx];
+        var target = SlotCalculator.Compute(slot, monitor); // picks up monitor.DpiScale when slot.ScaleDpi
 
         bool ok = WindowMover.Recall(info.Handle, target);
         int err = ok ? 0 : System.Runtime.InteropServices.Marshal.GetLastWin32Error();
-        App.Log($"recall '{info.Title}' [{info.ProcessName}] -> mon{idx + 1} {slot.Anchor} ({target.X},{target.Y}) {target.Width}x{target.Height}: ok={ok} err={err}");
+        App.Log($"recall '{info.Title}' [{info.ProcessName}] -> mon{idx + 1} {slot.Anchor} ({target.X},{target.Y}) {target.Width}x{target.Height} dpiScale={(slot.ScaleDpi ? monitor.DpiScale : 1.0):0.##}: ok={ok} err={err}");
         ReportStatus(ok
             ? $"recalled {TruncateTitle(info.Title)} → mon{idx + 1} {slot.Anchor} {target.Width}×{target.Height}"
             : $"recall FAILED ({err}) for {TruncateTitle(info.Title)}");

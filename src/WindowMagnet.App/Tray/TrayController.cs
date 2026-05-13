@@ -64,6 +64,21 @@ public sealed class TrayController : IDisposable
         menu.Items.Add("Hide picker", null, (_, _) => HidePicker());
         menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add("Edit profile...", null, (_, _) => OpenProfile());
+
+        // Checkable "Start with Windows" — reflects HKCU\...\Run and toggles it.
+        // CheckOnClick lets ToolStripMenuItem handle the visual flip; we sync the
+        // registry in the CheckedChanged handler.
+        var startupItem = new WinForms.ToolStripMenuItem("Start with Windows")
+        {
+            CheckOnClick = true,
+            Checked = StartupRegistration.IsEnabled(),
+        };
+        startupItem.CheckedChanged += (_, _) => StartupRegistration.SetEnabled(startupItem.Checked);
+        // Refresh the visible check state when the menu is about to open, in case
+        // the registry was touched out-of-band (regedit, another install path, etc.).
+        menu.Opening += (_, _) => startupItem.Checked = StartupRegistration.IsEnabled();
+        menu.Items.Add(startupItem);
+
         menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add("Quit", null, (_, _) => Application.Current.Shutdown());
         return menu;

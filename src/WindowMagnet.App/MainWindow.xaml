@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ctrl="clr-namespace:WindowMagnet.App.Controls"
         Title="WindowMagnet"
-        Width="380"
+        Width="404"
         SizeToContent="Height"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -18,7 +18,17 @@
     <Border Background="{StaticResource PanelBackground}"
             BorderBrush="{StaticResource PanelBorder}"
             BorderThickness="1"
-            CornerRadius="8">
+            CornerRadius="8"
+            Margin="12">
+        <!-- Margin reserves shadow space; AllowsTransparency=True means the shadow
+             spills over the transparent window canvas and looks like a real drop. -->
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18"
+                              ShadowDepth="3"
+                              Direction="270"
+                              Opacity="0.55"
+                              Color="Black" />
+        </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -96,6 +106,26 @@
                                 Height="90"
                                 Click="ThumbButton_Click"
                                 ToolTip="{Binding Tooltip}">
+                            <!--
+                                Right-click on a tile opens this menu. The ContextMenu's
+                                DataContext is the Button's DataContext (the WindowInfo)
+                                via PlacementTarget so MenuItems can bind to ProcessName.
+                            -->
+                            <Button.ContextMenu>
+                                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                    <MenuItem Header="Recall now" Click="MenuRecall_Click" />
+                                    <Separator />
+                                    <MenuItem Click="MenuAddRule_Click">
+                                        <MenuItem.Header>
+                                            <TextBlock>
+                                                <Run Text="Add rule for " />
+                                                <Run Text="{Binding ProcessName, Mode=OneWay}" FontWeight="Medium" />
+                                                <Run Text="..." />
+                                            </TextBlock>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Button.ContextMenu>
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource ThumbnailBtn}">
                                     <Style.Triggers>

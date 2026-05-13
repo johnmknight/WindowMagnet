@@ -186,24 +186,72 @@ public partial class MainWindow : Window
         // the value can be boxed in unexpected ways (or lost entirely on certain code paths).
         if (sender is not Button btn) { ReportStatus("click: not a button"); return; }
         if (btn.DataContext is not WindowInfo info) { ReportStatus("click: no WindowInfo bound"); return; }
+        RecallWindow(info);
+    }
 
-        // Bail early when we know SetWindowPos will fail across the integrity boundary.
-        // The tile is already dimmed in XAML; this gives the user a written explanation.
+    // ---- thumbnail context menu ----
+
+    private void MenuRecall_Click(object sender, RoutedEventArgs e)
+    {
+        // Mirror the left-click path — useful for accessibility and consistency.
+        if (sender is MenuItem mi && mi.DataContext is WindowInfo info)
+        {
+            RecallWindow(info);
+        }
+    }
+
+    private void MenuAddRule_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.DataContext is WindowInfo info)
+        {
+            AddRuleFor(info);
+        }
+    }
+
+    /// <summary>
+    /// Open the rule editor pre-filled with the given window's process name. On Save
+    /// the new rule is appended to the profile, written to disk, and the resolver is
+    /// rebuilt so the next thumbnail click on this app uses it. Same effect as opening
+    /// the Profile dialog, clicking Add rule, typing the process name — just zero clicks.
+    /// </summary>
+    public void AddRuleFor(WindowInfo info)
+    {
+        var seed = new ProfileDialog.RuleRow
+        {
+            ProcessName = info.ProcessName,
+            Slot = _profile.DefaultSlot, // start with whatever the user's default is
+        };
+        var monitors = Monitors.WorkAreas();
+        var dlg = new RuleEditDialog(seed, monitors, isNew: true) { Owner = this };
+        if (dlg.ShowDialog() == true && dlg.ResultRow is { } row)
+        {
+            var newRule = row.ToRule();
+            var newRules = _profile.Rules.Concat(new[] { newRule }).ToList();
+            _profile = _profile with { Rules = newRules };
+            _store.Save(_profile);
+            _resolver = new ProfileResolver(_profile);
+            App.Log($"rule added via right-click: {info.ProcessName} -> mon{newRule.Slot.Monitor} {newRule.Slot.Anchor}");
+            ReportStatus($"rule added for {TruncateTitle(info.ProcessName)}");
+        }
+    }
+
+    /// <summary>
+    /// Recall the given window using its resolved slot. Extracted so the click handler
+    /// and the context-menu "Recall now" share one path.
+    /// </summary>
+    private void RecallWindow(WindowInfo info)
+    {
         if (!info.CanMove)
         {
-            App.Log($"recall blocked: '{info.Title}' [{info.ProcessName}] is higher integrity (needs admin)");
             ReportStatus($"{TruncateTitle(info.Title)} needs admin to move");
             return;
         }
-
         var slot = _resolver.Resolve(info.ProcessName, info.Title);
-
         var monitors = Monitors.WorkAreas();
         if (monitors.Count == 0) { ReportStatus("no monitors enumerated"); return; }
         int idx = Math.Clamp(slot.Monitor - 1, 0, monitors.Count - 1);
         var monitor = monitors[idx];
-        var target = SlotCalculator.Compute(slot, monitor); // picks up monitor.DpiScale when slot.ScaleDpi
-
+        var target = SlotCalculator.Compute(slot, monitor);
         bool ok = WindowMover.Recall(info.Handle, target);
         int err = ok ? 0 : System.Runtime.InteropServices.Marshal.GetLastWin32Error();
         App.Log($"recall '{info.Title}' [{info.ProcessName}] -> mon{idx + 1} {slot.Anchor} ({target.X},{target.Y}) {target.Width}x{target.Height} dpiScale={(slot.ScaleDpi ? monitor.DpiScale : 1.0):0.##}: ok={ok} err={err}");
